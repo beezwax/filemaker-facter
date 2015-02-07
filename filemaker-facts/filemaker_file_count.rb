@@ -11,25 +11,30 @@
 ## filemaker_file_count.rb
 
 require 'etc'
-require 'filemaker_utils.rb'
+
+# Testing with Ruby 2.0, why doesn't this work?
+# require_relative("filemaker_utils")
+require "#{File.dirname(__FILE__)}/filemaker_utils"
+
+# The number of open files is the 8th column in FMS 13 Stats.log file.
+OPEN_COL = 7
+
 
 # This version uses the last entry in the Stats.log to determine how
 # many files are currently open. However, the log may not be enabled,
 # so we check if the log has been updated recently.
 
-def count_from_stats (stats_path)
-
-  # The number of open files is the 8th column in FMS 13 Stats.log file.
-  OPEN_COL = 7
+def count_from_stats(stats_path)
 
   # Stats have been updated within the last 5 minutes?
-  stats_updated = (Time.new() - File.ctime (stats_path)) < (5*60)
+  stats_updated_at = File.ctime(stats_path)
+  stats_updated = (Time.new() - stats_updated_at) < (5*60)
 
   setcode do
     if stats_updated
       begin
         # Get last line of log.
-        last_line = tail (stats_paths,1)
+        last_line = tail(stats_paths,1)
         cols = last_line.split()
 
         # Return the column with number of open database files.
@@ -43,7 +48,7 @@ end
 
 # Mac version using Stats.log
 
-Facter.add('filemaker_filecount') do
+Facter.add('filemaker_file_count') do
 
   has_weight 100
 
@@ -51,16 +56,16 @@ Facter.add('filemaker_filecount') do
   confine :kernel => :darwin
 
   # Our log file path.
-  STATS_PATH = "/Library/FileMaker Server/Logs/Stats.log"
+  stats_path = "/Library/FileMaker Server/Logs/Stats.log"
 
-  count_from_stats (STATS_PATH)
+  count_from_stats(stats_path)
   
 end
 
 
 # Windows version using Stats.log
 
-Facter.add('filemaker_filecount') do
+Facter.add('filemaker_file_count') do
 
   has_weight 80
 
@@ -68,9 +73,9 @@ Facter.add('filemaker_filecount') do
   confine :kernel => :windows
 
   # Our log file path.
-  STATS_PATH = "C:/Program Files/FileMaker/FileMaker Server/Logs/Stats.log"
+  stats_path = "C:/Program Files/FileMaker/FileMaker Server/Logs/Stats.log"
 
-  count_from_stats (STATS_PATH)
+  count_from_stats(stats_path)
   
 end
 
@@ -78,16 +83,18 @@ end
 # Here we use the lsof command. We can either run this as the fmserver
 # user, or as root (otherwise we are out of luck).
 
-Facter.add('filemaker_filecount') do
+Facter.add('filemaker_file_count') do
 
   has_weight 60
 
   # Mac OS Version
   confine :kernel => :darwin
 
-  if Etc.getpwuid(Process.euid).name = 'fmserver'
+  current_user = Etc.getpwuid(Process.euid).name
+
+  if current_user = "fmserver"
     setcode "lsof -Fn | grep -c '\.fmp12$'"
-  elsif 
+  elsif current_user = "root"
     setcode "lsof -u fmserver -Fn | grep -c '\.fmp12$'"
   end
 

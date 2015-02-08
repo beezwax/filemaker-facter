@@ -22,7 +22,7 @@ Facter.add('filemaker_version') do
   confine :kernel => :darwin
 
   # Get version info from fmsadmin command, then strip out everything but version number.
-  setcode FMSADMIN_MAC + "-v -u NONE -p NONE | awk '/ Version / { print $3 }'"
+  setcode FMSADMIN_MAC + " -v -u NONE -p NONE | awk '/ Version / { print $3 }'"
 end
 
 

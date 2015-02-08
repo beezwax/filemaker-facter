@@ -6,10 +6,11 @@
 
 # Paths to the fmsadmin command.
 FMSADMIN_MAC = "/usr/bin/fmsadmin"
-FMSADMIN_WIN = ""C:/Program Files/FileMaker/FileMaker Server/fmsadmin"
+FMSADMIN_WIN = "C:/Program Files/FileMaker/FileMaker Server/fmsadmin"
 
 # LOG FILE PATHS
 LOG_EVENTS_MAC = "/Library/FileMaker Server/Logs/Eventss.log"
+LOG_STATS_WIN = "C:/Program Files/FileMaker/FileMaker Server/Logs/Stats.log"
 LOG_STATS_MAC = "/Library/FileMaker Server/Logs/Stats.log"
 
 # STATS LOG COLUMNS

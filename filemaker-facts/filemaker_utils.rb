@@ -20,7 +20,7 @@ STATS_NETIN = 1
 STATS_NETOUT = 2
 STATS_DISKREAD = 3
 STATS_DISKWRITE = 4
-STATS_OPENDBS = 7
+STATS_OPENDBS = 8
 
 
 ## filemaker_utils.rb
@@ -84,4 +84,3 @@ def last_line_of_log(path)
   
   return last_line
 end
-                

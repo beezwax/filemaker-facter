@@ -37,9 +37,7 @@ Facter.add('filemaker_file_count') do
 
   setcode do
     last_line = last_line_of_log(LOG_STATS_MAC)
-    puts("last_line: " + last_line)
-    puts("DBS: " + last_line.split()[STATS_OPENDBS])
-    return last_line.split()[STATS_OPENDBS]
+    last_line.split("\t")[STATS_OPENDBS]
   end
 
 end
@@ -58,7 +56,7 @@ Facter.add('filemaker_file_count') do
 
   setcode do
     last_line = last_line_of_log(LOG_STATS_WIN)
-    return last_line.split()[STATS_OPENDBS]
+    last_line.split("\t")[STATS_OPENDBS]
   end
 
 end

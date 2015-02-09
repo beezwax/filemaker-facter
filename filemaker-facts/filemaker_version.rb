@@ -12,8 +12,7 @@
 ## filemaker_version.rb
 
 require 'facter'
-# require_relative("filemaker_utils")
-require "#{File.dirname(__FILE__)}/filemaker_utils"
+require 'filemaker_utils'
 
 # Mac Version
 
@@ -26,10 +25,10 @@ Facter.add('filemaker_version') do
   fmsadmin_call = FMSADMIN_MAC + " -v -u none -p none"
   
   setcode do
-    raw = Facter::Core::Execution.exec(fmsadmin_call)
-      
+    raw = Facter::Util::Resolution.exec(fmsadmin_call)
+  
     # Pull out the Version line, only return 2nd word.
-    return /Version (.*)/.match(raw)[1]
+    /Version (.*)/.match(raw)[1]
   end
 
   # Get version info from fmsadmin command, then strip out everything but version number.
@@ -47,9 +46,9 @@ Facter.add('filemaker_version') do
   fmsadmin_call = FMSADMIN_WIN + " -v"
   
   setcode do
-    raw = Facter::Core::Execution.exec(fmsadmin_call)
+    raw = Facter::Util::Resolution.exec(fmsadmin_call)
       
     # Pull out the Version line, only return 2nd word.
-    return /Version (.*)/.match(raw)[1]
+    /Version (.*)/.match(raw)[1]
   end
 end

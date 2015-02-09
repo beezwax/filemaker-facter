@@ -13,19 +13,12 @@
 ## filemaker_file_count.rb
 
 require 'etc'
-
-# Testing with Ruby 2.0, why doesn't this work?
-# require_relative("filemaker_utils")
-require "#{File.dirname(__FILE__)}/filemaker_utils"
-
-# The number of open files is the 8th column in FMS 13 Stats.log file.
-OPEN_COL = 7
-
+require "filemaker_utils"
 
 
 # Mac version using Stats.log
 
-# UNFINISHED
+#### UNFINISHED
 
 Facter.add('filemaker_errors') do
 
@@ -33,6 +26,9 @@ Facter.add('filemaker_errors') do
 
   # Mac OS Version
   confine :kernel => :darwin
+
+# Trying to keep compatibility with facter version 1.7 or higher.
+# Unfortunately, structured replies not supported until version 2.0.
 
   setcode do
     # Our log file path.

@@ -3,41 +3,53 @@
 # PURPOSE: Get the version number as reported by the fmsadmin command
 #
 # NOTES:
-#   We must supply a dummy user and password to avoid getting stuck on prompt.
+#   On Mac OS, we must supply a dummy user and password to avoid getting stuck on credentials prompt
+#   that comes after the version information is supplied.
 #
 # HISTORY
 #   2015-02-07 simon_b: created file
 
 ## filemaker_version.rb
 
+require 'facter'
 # require_relative("filemaker_utils")
 require "#{File.dirname(__FILE__)}/filemaker_utils"
 
-# Mac version
+# Mac Version
 
 Facter.add('filemaker_version') do
 
   has_weight 100
-
+  
   confine :kernel => :darwin
+  
+  fmsadmin_call = FMSADMIN_MAC + " -v -u none -p none"
+  
+  setcode do
+    raw = Facter::Core::Execution.exec(fmsadmin_call)
+      
+    # Pull out the Version line, only return 2nd word.
+    return /Version (.*)/.match(raw)[1]
+  end
 
   # Get version info from fmsadmin command, then strip out everything but version number.
-  setcode FMSADMIN_MAC + " -v -u NONE -p NONE | awk '/ Version / { print $3 }'"
+  #setcode FMSADMIN_MAC + " -v -u NONE -p NONE | " + AWK_MAC + " '/ Version / { print $3 }'"
 end
 
+# Windows Version
 
-# Windows version using Stats.log
-
-Facter.add('filemaker_file_count') do
+Facter.add('filemaker_version') do
 
   has_weight 80
-
-  # Windows Version
+  
   confine :kernel => :windows
 
-# SOMEHOW USE A SYNTAX LIKE THIS?
-# set "value=%version*\Version\=%"
-
-  setcode FMSADMIN_WIN + "-v -u NONE -p NONE"
-    
+  fmsadmin_call = FMSADMIN_WIN + " -v"
+  
+  setcode do
+    raw = Facter::Core::Execution.exec(fmsadmin_call)
+      
+    # Pull out the Version line, only return 2nd word.
+    return /Version (.*)/.match(raw)[1]
+  end
 end

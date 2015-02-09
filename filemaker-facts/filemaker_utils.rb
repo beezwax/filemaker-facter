@@ -4,7 +4,8 @@
 #   2015-02-06 simon_b: created file
 #   2015-02-08 simon_b: added constants
 
-# Paths to the fmsadmin command.
+# Paths to commands used.
+AWK_MAC = "/usr/bin/awk"
 FMSADMIN_MAC = "/usr/bin/fmsadmin"
 FMSADMIN_WIN = "C:/Program Files/FileMaker/FileMaker Server/fmsadmin"
 
@@ -25,7 +26,7 @@ STATS_OPENDBS = 7
 ## filemaker_utils.rb
 
 def log_is_current (path)
-  stats_updated_at = File.ctime(stats_path)
+  stats_updated_at = File.ctime(path)
   return (Time.new() - stats_updated_at) < (5*60)
 end
 
@@ -64,3 +65,23 @@ def tail(path, n)
   file.seek(offset)
   return file.read
 end
+
+#
+#	l a s t _ l i n e _ o f _ l o g
+#
+
+# Return the last line from Stats.log if it is current.
+# Otherwise return an empty string.
+
+def last_line_of_log(path)
+
+  # If the log file is current, return its last line.
+  if log_is_current(path)
+    last_line = tail(path,1)
+  else
+    last_line = ""
+  end
+  
+  return last_line
+end
+                

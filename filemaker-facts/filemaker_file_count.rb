@@ -14,11 +14,7 @@
 ## filemaker_file_count.rb
 
 require 'etc'
-
-# Testing with Ruby 2.0, why doesn't this work?
-require "filemaker_utils"
-#require "#{File.dirname(__FILE__)}/filemaker_utils"
-
+require_relative "filemaker_utils"
 
 #
 #       f i l e m a k e r _ f i l e _ c o u n t
@@ -74,9 +70,9 @@ Facter.add('filemaker_file_count') do
 
   current_user = Etc.getpwuid(Process.euid).name
 
-  if current_user = "fmserver"
+  if current_user == "fmserver"
     setcode "lsof -Fn | grep -c '\.fmp12$'"
-  elsif current_user = "root"
+  elsif current_user == "root"
     setcode "lsof -u fmserver -Fn | grep -c '\.fmp12$'"
   end
 

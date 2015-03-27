@@ -1,6 +1,6 @@
-# FACT: FileMaker Server errors
+# FACT: FileMaker Server running components
 #
-# PURPOSE: List the error codes (if any) for any logged error codes in the last 24 hours
+# PURPOSE: List the components that are currently running
 #
 # NOTES:
 #   Assumes logging interval is set to the default 30 second interval and the Event.log has not been rolled recently.
@@ -9,7 +9,8 @@
 #
 # HISTORY
 #   2015-02-07 simon_b: created file
-#   2015-03-27 simon_b: now only returning error messages
+
+## filemaker_file_count.rb
 
 require 'etc'
 require "filemaker_utils"
@@ -29,11 +30,13 @@ Facter.add('filemaker_errors') do
 # Trying to keep compatibility with facter version 1.7 or higher.
 # Unfortunately, structured replies not supported until version 2.0.
 
+# ps -wwc -u fmserver
+
   setcode do
     # Our log file path.
-    raw=tail(STATS_LOG_MAC,100)
-    puts raw.grep(/\tError\t/)
+    return tail(STATS_LOG_MAC)
   end  
 end
+
 
 

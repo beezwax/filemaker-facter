@@ -3,6 +3,8 @@
 # HISTORY
 #   2015-02-06 simon_b: created file
 #   2015-02-08 simon_b: added constants
+#   2015-03-27 simon_b: fixed path, added new ones
+
 
 # Paths to commands used.
 AWK_MAC = "/usr/bin/awk"
@@ -10,9 +12,12 @@ FMSADMIN_MAC = "/usr/bin/fmsadmin"
 FMSADMIN_WIN = "C:/Program Files/FileMaker/FileMaker Server/fmsadmin"
 
 # LOG FILE PATHS
-LOG_EVENTS_MAC = "/Library/FileMaker Server/Logs/Eventss.log"
-LOG_STATS_WIN = "C:/Program Files/FileMaker/FileMaker Server/Logs/Stats.log"
+LOG_CLIENTSTATS_MAC = "/Library/FileMaker Server/Logs/ClientStats.log"
+LOG_STATS_WIN = "C:/Program Files/FileMaker/FileMaker Server/Logs/ClientStats.log"
+LOG_EVENTS_MAC = "/Library/FileMaker Server/Logs/Event.log"
+LOG_EVENTS_WIN = "C:/Program Files/FileMaker/FileMaker Server/Logs/Event.log"
 LOG_STATS_MAC = "/Library/FileMaker Server/Logs/Stats.log"
+LOG_STATS_WIN = "C:/Program Files/FileMaker/FileMaker Server/Logs/Stats.log"
 
 # STATS LOG COLUMNS
 # Values for tab-delimited columns in the Stats.log file.

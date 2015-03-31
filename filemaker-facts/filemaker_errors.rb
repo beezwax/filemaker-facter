@@ -11,6 +11,7 @@
 #   2015-02-07 simon_b: created file
 #   2015-03-27 simon_b: now only returning error messages
 
+require "facter"
 require 'etc'
 require_relative "filemaker_utils"
 
@@ -27,9 +28,16 @@ Facter.add('filemaker_errors') do
 # Trying to keep compatibility with facter version 1.7 or higher.
 # Unfortunately, structured replies not supported until version 2.0.
 
+  # Our log file path.
+  raw=tail(LOG_EVENTS_MAC,500)
+  error_lines=raw.scan(/.*\tError\t.*/)
+
   setcode do
-    # Our log file path.
-    raw=tail(LOG_EVENTS_MAC,200)
-    raw.scan(/.*\tError\t.*/)
+     if errorLines.count
+        errorLines.join("\n")
+     else
+        "<no recent errors>"
+     end
   end
+
 end

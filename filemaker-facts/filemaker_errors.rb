@@ -12,10 +12,8 @@
 #   2015-03-27 simon_b: now only returning error messages
 
 require 'etc'
-require "filemaker_utils"
+require_relative "filemaker_utils"
 
-
-# Mac version using Stats.log
 
 #### UNFINISHED
 
@@ -31,9 +29,7 @@ Facter.add('filemaker_errors') do
 
   setcode do
     # Our log file path.
-    raw=tail(STATS_LOG_MAC,100)
-    puts raw.grep(/\tError\t/)
-  end  
+    raw=tail(LOG_EVENTS_MAC,200)
+    raw.scan(/.*\tError\t.*/)
+  end
 end
-
-

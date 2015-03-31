@@ -13,12 +13,13 @@
 ## filemaker_file_count.rb
 
 require 'etc'
-require "filemaker_utils"
+require_relative "filemaker_utils"
 
 
-# Mac version using Stats.log
+####
+#### UNFINISHED ####
+####
 
-#### UNFINISHED
 
 Facter.add('filemaker_errors') do
 
@@ -34,8 +35,8 @@ Facter.add('filemaker_errors') do
 
   setcode do
     # Our log file path.
-    return tail(STATS_LOG_MAC)
-  end  
+    return tail(LOG_STATS_MAC)
+  end
 end
 
 

@@ -37,6 +37,8 @@ end
 
 # From http://stackoverflow.com/questions/754494/reading-the-last-n-lines-of-a-file-in-ruby/28221975
 
+# TODO: Always returning an extra newline at end.
+ 
 def tail(path, n)
   file = File.open(path, "r")
   buffer_s = 512

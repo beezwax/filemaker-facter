@@ -10,6 +10,7 @@
 # HISTORY
 #   2015-02-07 simon_b: created file
 #   2015-03-27 simon_b: now only returning error messages
+#   2015-04-02 simon_b: Windows version
 
 require 'etc'
 require_relative "filemaker_utils"
@@ -17,23 +18,44 @@ require_relative "filemaker_utils"
 
 Facter.add('filemaker_errors') do
 
-  has_weight 100
-
   # Mac OS Version
   confine :kernel => :darwin
 
-# Trying to keep compatibility with facter version 1.7 or higher.
-# Unfortunately, structured replies not supported until version 2.0.
-
-  # Get recent FMS event data.
-  raw=tail(LOG_EVENTS_MAC,500)
-  error_lines=raw.scan(/.*\tError\t.*/)
-
   setcode do
+     # Change this if too few/too many errors getting reported.
+     events_to_check = 500
+
+     # Get recent FMS event data.
+     raw=tail(LOG_EVENTS_MAC,events_to_check)
+     error_lines=raw.scan(/.*\tError\t.*/)
+
      if error_lines.count
-	# If there were a lot of errors, it would be nice to limit the # of errors returned.
-	# Use a structured result?
+        # If there were a lot of errors, it would be nice to limit the # of errors returned.
+        # This could've been returned as a structured result, but it is a bit more readable as string.
         error_lines.join("\n")
      end
   end
 end
+
+
+Facter.add('filemaker_errors') do
+
+  # Windows Version
+  confine :kernel => :windows
+
+  setcode do
+     # Change this if too few/too many errors getting reported.
+     events_to_check = 500
+
+     # Get recent FMS event data.
+     raw=tail(LOG_EVENTS_WIN,events_to_check)
+     error_lines=raw.scan(/.*\tError\t.*/)
+
+     if error_lines.count
+        # If there were a lot of errors, it would be nice to limit the # of errors returned.
+        # This could've been returned as a structured result, but it is a bit more readable as string.
+        error_lines.join("\n")
+     end
+  end
+end
+

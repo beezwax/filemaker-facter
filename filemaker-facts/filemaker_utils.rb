@@ -13,7 +13,7 @@ FMSADMIN_WIN = "C:/Program Files/FileMaker/FileMaker Server/fmsadmin"
 
 # LOG FILE PATHS
 LOG_CLIENTSTATS_MAC = "/Library/FileMaker Server/Logs/ClientStats.log"
-LOG_STATS_WIN = "C:/Program Files/FileMaker/FileMaker Server/Logs/ClientStats.log"
+LOG_CLIENTSTATS_WIN = "C:/Program Files/FileMaker/FileMaker Server/Logs/ClientStats.log"
 LOG_EVENTS_MAC = "/Library/FileMaker Server/Logs/Event.log"
 LOG_EVENTS_WIN = "C:/Program Files/FileMaker/FileMaker Server/Logs/Event.log"
 LOG_STATS_MAC = "/Library/FileMaker Server/Logs/Stats.log"

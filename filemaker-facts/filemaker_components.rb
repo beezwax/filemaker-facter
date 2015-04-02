@@ -9,33 +9,64 @@
 #
 # HISTORY
 #   2015-02-07 simon_b: created file
+#   2015-04-02 simon_b: working Mac OS version
 
-## filemaker_file_count.rb
+## filemaker_components.rb
 
 require 'etc'
 require_relative "filemaker_utils"
 
 
-####
-#### UNFINISHED ####
-####
-
-
-Facter.add('filemaker_errors') do
-
-  has_weight 100
+Facter.add('filemaker_components') do
 
   # Mac OS Version
   confine :kernel => :darwin
 
-# Trying to keep compatibility with facter version 1.7 or higher.
-# Unfortunately, structured replies not supported until version 2.0.
+  running = []
 
-# ps -wwc -u fmserver
+  # ps -wwc -u fmserver -o comm | grep -v COMM | sort -u
+
+  # Need the full command so that we can check for the fmadminserver applet.
+  raw = `ps -u fmserver -o command`
+
+  if raw.include? "FMS.COMPONENT=fmadminserver"
+    running.push ("ADMINSERVER")
+  end
+
+  if raw.include? "bin/fmsib"
+    running.push ("FMSIB")
+  end
+
+  if  raw.include? "bin/fmsased"
+    running.push ("FMSE")
+  end
+
+  if  raw.include? "bin/fmserverd"
+    running.push ("SERVER")
+  end
+
+  if  raw.include? "bin/fmscwpc"
+    running.push ("WPE")
+  end
+
+  if  raw.include? "./fmxdbc_listener"
+    running.push ("XDBC")
+  end
+
+  if  raw.include? "bin/fmserver_helperd"
+    running.push ("fmserver_helperd")
+  end
+
+  if  raw.include? "sbin/httpd"
+    running.push ("httpd")
+  end
+
+  if  raw.include? "bin/fmslogtrimmer"
+    running.push ("fmslogtrimmer")
+  end
 
   setcode do
-    # Our log file path.
-    return tail(LOG_STATS_MAC)
+    running
   end
 end
 

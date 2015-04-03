@@ -4,8 +4,9 @@ Facter custom facts for reporting FileMaker Server statistics and status
 The files here implement what are called "custom facts" for Facter based reporting with FileMaker Servers.
 
 Currently working facts are:
+
 | Fact Name            | Description |
-| -------------------- | ----------- |
+|----------------------|-------------|
 | filemaker_components | lists the FileMaker server components currently running |
 | filemaker_errors     | recent errors in the Events.log (if any) |
 | filemaker_file_count | number of open database files on server |
@@ -24,5 +25,5 @@ After Facter is installed, add the .rb files from this project's filemaker-facts
 
 Minimal crontab entry:
 
-#min    hour    dom    mon    dow    command
+ #min    hour    dom    mon    dow    command
 0       8,12,16 *      *      *      /usr/bin/facter macosx_productversion memoryfree sp_uptime filemaker_version filemaker_errors | /usr/bin/mail -s "facter report `/bin/hostname`" simon@beezwax.nodomain

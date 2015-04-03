@@ -3,6 +3,14 @@ Facter custom facts for reporting FileMaker Server statistics and status
 
 The files here implement what are called "custom facts" for Facter based reporting with FileMaker Servers.
 
+Currently working facts are:
+| Fact Name            | Description |
+| -------------------- | ----------- |
+| filemaker_components | lists the FileMaker server components currently running |
+| filemaker_errors     | recent errors in the Events.log (if any) |
+| filemaker_file_count | number of open database files on server |
+| filemaker_version    | version of FileMaker Server |
+
 The core Facter components must first be installed seperately.
 
 Facter installers can be found at:
@@ -11,6 +19,8 @@ Facter installers can be found at:
 	http://downloads.puppetlabs.com/mac/
 
 At this time (March 2015) converting scripts to use Facter version 2.4
+
+After Facter is installed, add the .rb files from this project's filemaker-facts into the facter folder. 
 
 Minimal crontab entry:
 

@@ -22,17 +22,21 @@ Facter.add('filemaker_errors') do
   confine :kernel => :darwin
 
   setcode do
-     # Change this if too few/too many errors getting reported.
+     # Change these if too few/too many errors getting reported.
      events_to_check = 500
+     max_errors = 10
 
      # Get recent FMS event data.
      raw=tail(LOG_EVENTS_MAC,events_to_check)
-     error_lines=raw.scan(/.*\tError\t.*/)
+     error_lines = raw.scan(/.*\tError\t.*/)
 
-     if error_lines.count
-        # If there were a lot of errors, it would be nice to limit the # of errors returned.
+     if error_lines != []
+        # Restrict to the last errors found.
+        max_errors = [max_errors,error_lines.count].min
+        error_lines_last = error_lines[-max_errors, max_errors]
+
         # This could've been returned as a structured result, but it is a bit more readable as string.
-        error_lines.join("\n")
+        error_lines_last.join("\n")
      end
   end
 end
@@ -46,15 +50,19 @@ Facter.add('filemaker_errors') do
   setcode do
      # Change this if too few/too many errors getting reported.
      events_to_check = 500
+     max_errors = 10
 
      # Get recent FMS event data.
      raw=tail(LOG_EVENTS_WIN,events_to_check)
-     error_lines=raw.scan(/.*\tError\t.*/)
+     error_lines = raw.scan(/.*\tError\t.*/)
 
-     if error_lines.count
-        # If there were a lot of errors, it would be nice to limit the # of errors returned.
+     if error_lines != []
+        # Restrict to the last errors found.
+        max_errors = [max_errors,error_lines.count].min
+        error_lines_last = error_lines[-max_errors, max_errors]
+        
         # This could've been returned as a structured result, but it is a bit more readable as string.
-        error_lines.join("\n")
+        error_lines_last.join("\n")
      end
   end
 end

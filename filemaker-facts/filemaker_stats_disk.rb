@@ -44,7 +44,7 @@ Facter.add('filemaker_stats_disk') do
         end
 
         sum_read += Float(columns [STATS_DISKREAD])
-        sum_out += Float(columns [STATS_DISKWRITE])
+        sum_write += Float(columns [STATS_DISKWRITE])
 
         # End of an interval we are summing up?
         if break_index >= break_interval

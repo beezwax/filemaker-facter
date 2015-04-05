@@ -18,16 +18,13 @@ require_relative "filemaker_utils"
 
 Facter.add('filemaker_errors') do
 
-  # Mac OS Version
-  confine :kernel => :darwin
-
   setcode do
      # Change these if too few/too many errors getting reported.
      events_to_check = 500
      max_errors = 10
 
      # Get recent FMS event data.
-     raw=tail(LOG_EVENTS_MAC,events_to_check)
+     raw=tail(LOG_EVENTS,events_to_check)
      error_lines = raw.scan(/.*\tError\t.*/)
 
      if error_lines != []
@@ -35,32 +32,6 @@ Facter.add('filemaker_errors') do
         max_errors = [max_errors,error_lines.count].min
         error_lines_last = error_lines[-max_errors, max_errors]
 
-        # This could've been returned as a structured result, but it is a bit more readable as string.
-        error_lines_last.join("\n")
-     end
-  end
-end
-
-
-Facter.add('filemaker_errors') do
-
-  # Windows Version
-  confine :kernel => :windows
-
-  setcode do
-     # Change this if too few/too many errors getting reported.
-     events_to_check = 500
-     max_errors = 10
-
-     # Get recent FMS event data.
-     raw=tail(LOG_EVENTS_WIN,events_to_check)
-     error_lines = raw.scan(/.*\tError\t.*/)
-
-     if error_lines != []
-        # Restrict to the last errors found.
-        max_errors = [max_errors,error_lines.count].min
-        error_lines_last = error_lines[-max_errors, max_errors]
-        
         # This could've been returned as a structured result, but it is a bit more readable as string.
         error_lines_last.join("\n")
      end

@@ -18,11 +18,9 @@ require_relative 'filemaker_utils'
 
 Facter.add('filemaker_version') do
 
-  has_weight 100
-  
   confine :kernel => :darwin
   
-  fmsadmin_call = FMSADMIN_MAC + " -v -u none -p none"
+  fmsadmin_call = FMSADMIN + " -v -u none -p none"
   
   setcode do
     raw = Facter::Util::Resolution.exec(fmsadmin_call)
@@ -32,18 +30,17 @@ Facter.add('filemaker_version') do
   end
 
   # Get version info from fmsadmin command, then strip out everything but version number.
-  #setcode FMSADMIN_MAC + " -v -u NONE -p NONE | " + AWK_MAC + " '/ Version / { print $3 }'"
+  #setcode FMSADMIN + " -v -u NONE -p NONE | " + AWK_MAC + " '/ Version / { print $3 }'"
 end
+
 
 # Windows Version
 
 Facter.add('filemaker_version') do
-
-  has_weight 80
   
   confine :kernel => :windows
 
-  fmsadmin_call = FMSADMIN_WIN + " -v"
+  fmsadmin_call = FMSADMIN + " -v"
   
   setcode do
     raw = Facter::Util::Resolution.exec(fmsadmin_call)

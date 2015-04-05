@@ -20,7 +20,6 @@ require_relative "filemaker_utils"
 #       f i l e m a k e r _ f i l e _ c o u n t
 #
 
-# Mac version
 # This version uses the last entry in the Stats.log to determine how
 # many files are currently open. However, the log may not be enabled,
 # so we check if the log has been updated recently.
@@ -32,26 +31,7 @@ Facter.add('filemaker_file_count') do
   confine :kernel => :darwin
 
   setcode do
-    last_line = last_line_of_log(LOG_STATS_MAC)
-    last_line.split("\t")[STATS_OPENDBS]
-  end
-
-end
-
-#
-#       f i l e m a k e r _ f i l e _ c o u n t
-#
-
-# Windows version using Stats.log to return the current number of open database files.
-
-Facter.add('filemaker_file_count') do
-
-  has_weight 80
-
-  confine :kernel => :windows
-
-  setcode do
-    last_line = last_line_of_log(LOG_STATS_WIN)
+    last_line = last_line_of_log(LOG_STATS)
     last_line.split("\t")[STATS_OPENDBS]
   end
 

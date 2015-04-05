@@ -24,7 +24,8 @@ At this time (March 2015) converting scripts to use Facter version 2.4
 
 After Facter is installed, add the .rb files from this project's filemaker-facts into the facter folder. 
 
-Minimal crontab entry:
-
- #min    hour    dom    mon    dow    command
-0       8,12,16 *      *      *      /usr/bin/facter macosx_productversion memoryfree sp_uptime filemaker_version filemaker_errors | /usr/bin/mail -s "facter report `/bin/hostname`" simon@beezwax.nodomain
+crontab usage example:
+```
+#min    hour    dom    mon    dow    command
+0       8,12,6  *      *      *      /usr/bin/facter macosx_productversion memoryfree sp_uptime filemaker_version filemaker_errors | /usr/bin/mail -s "facter report `/bin/hostname`" simon@beezwax.nodomain
+```

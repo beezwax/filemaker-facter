@@ -10,6 +10,7 @@ Currently working facts are:
 | filemaker_components    | FileMaker server components currently running |
 | filemaker_errors        | recent errors in the Events.log (if any) |
 | filemaker_file_count    | number of open database files on server |
+| filemaker_stats_disk    | disk usage for week, broken down by 24-hour period |
 | filemaker_stats_network | network bytes for week, broken out by 24-hour period |
 | filemaker_version       | version of FileMaker Server |
 

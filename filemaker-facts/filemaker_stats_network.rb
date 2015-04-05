@@ -9,14 +9,11 @@
 #
 # HISTORY
 #   2015-04-02 simon_b: Created filed
+#   2015-04-04 simon_b: first working version
 
 require 'etc'
+require "facter"
 require_relative "filemaker_utils"
-
-
-###
-### NOT DONE! ####
-###
 
 
 Facter.add('filemaker_stats_network') do
@@ -25,22 +22,50 @@ Facter.add('filemaker_stats_network') do
   confine :kernel => :darwin
 
   setcode do
-     # Change these if too few/too many intervals getting reported.
-     events_to_check = 2 * 60 * 24 * 7   # One week
+     # Change this to adjust the period reported.
+     break_interval = 2 * 60 * 24
+     rows_to_check = break_interval * 7   # One week, minus one b/c index is zero based.
 
-     # Get recent FMS event data.
-     raw=tail(LOG_STATS_MAC,events_to_check)
-     error_lines = raw.scan(/.*\tError\t.*/)
+     # Get recent FMS stats data for up to our total number of rows.
+     raw=tail(LOG_STATS_MAC,rows_to_check)
 
-     if error_lines != []
-        # Restrict to the last errors found.
-        max_errors = [max_errors,error_lines.count].min
-        error_lines_last = error_lines[-max_errors, max_errors]
+     intervals = []
 
-        # This could've been returned as a structured result, but it is a bit more readable as string.
-        error_lines_last.join("\n")
+     # Index into lines, relative to start of interval
+     break_index = 1
+
+     sum_timestamp = ""
+     sum_in = 0.0
+     sum_out = 0.0
+
+     raw.each_line do |line|
+        columns = line.split("\t")
+
+        if break_index == 1
+           sum_timestamp = columns [STATS_TIMESTAMP]
+           sum_in = 0.0
+           sum_out = 0.0
+        end
+
+        sum_in += Float(columns [STATS_NETIN])
+        sum_out += Float(columns [STATS_NETOUT])
+
+        # End of an interval we are summing up?
+        if break_index >= break_interval
+           # print columns [STATS_TIMESTAMP], " ", columns [STATS_NETIN], " ", columns [STATS_NETOUT], " ", sum_in, " ", sum_out, "\n"
+
+           # Add in the sums for this breakout point.
+           intervals.push([sum_timestamp, sum_in, sum_out])
+           break_index = 1
+        else
+           break_index += 1
+        end
      end
+
+     # Return Facter result.
+     intervals
   end
+
 end
 
 
@@ -50,22 +75,49 @@ Facter.add('filemaker_stats_network') do
   confine :kernel => :windows
 
   setcode do
-     # Change this if too few/too many errors getting reported.
-     events_to_check = 500
-     max_errors = 10
+     # Change this to adjust the period reported.
+     break_interval = 2 * 60 * 24
+     rows_to_check = break_interval * 7   # One week, minus one b/c index is zero based.
 
-     # Get recent FMS event data.
-     raw=tail(LOG_STATS_WIN,events_to_check)
-     error_lines = raw.scan(/.*\tError\t.*/)
+     # Get recent FMS stats data for up to our total number of rows.
+     raw=tail(LOG_STATS_MAC,rows_to_check)
 
-     if error_lines != []
-        # Restrict to the last errors found.
-        max_errors = [max_errors,error_lines.count].min
-        error_lines_last = error_lines[-max_errors, max_errors]
-        
-        # This could've been returned as a structured result, but it is a bit more readable as string.
-        error_lines_last.join("\n")
+     intervals = []
+
+     # Index into lines, relative to start of interval
+     break_index = 1
+
+     sum_timestamp = ""
+     sum_in = 0.0
+     sum_out = 0.0
+
+     raw.each_line do |line|
+        columns = line.split("\t")
+
+        if break_index == 1
+           sum_timestamp = columns [STATS_TIMESTAMP]
+           sum_in = 0.0
+           sum_out = 0.0
+        end
+
+        sum_in += Float(columns [STATS_NETIN])
+        sum_out += Float(columns [STATS_NETOUT])
+
+        # End of an interval we are summing up?
+        if break_index >= break_interval
+           # print columns [STATS_TIMESTAMP], " ", columns [STATS_NETIN], " ", columns [STATS_NETOUT], " ", sum_in, " ", sum_out, "\n"
+
+           # Add in the sums for this breakout point.
+           intervals.push([sum_timestamp, sum_in, sum_out])
+           break_index = 1
+        else
+           break_index += 1
+        end
      end
+
+     # Return Facter result.
+     intervals
   end
+
 end
 

@@ -5,12 +5,13 @@ The files here implement what are called "custom facts" for Facter based reporti
 
 Currently working facts are:
 
-| Fact Name            | Description |
-|----------------------|-------------|
-| filemaker_components | lists the FileMaker server components currently running |
-| filemaker_errors     | recent errors in the Events.log (if any) |
-| filemaker_file_count | number of open database files on server |
-| filemaker_version    | version of FileMaker Server |
+| Fact Name               | Description |
+|-------------------------|-------------|
+| filemaker_components    | FileMaker server components currently running |
+| filemaker_errors        | recent errors in the Events.log (if any) |
+| filemaker_file_count    | number of open database files on server |
+| filemaker_stats_network | network bytes for week, broken out by 24-hour period |
+| filemaker_version       | version of FileMaker Server |
 
 The core Facter components must first be installed seperately.
 

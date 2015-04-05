@@ -21,6 +21,8 @@ LOG_STATS_WIN = "C:/Program Files/FileMaker/FileMaker Server/Logs/Stats.log"
 
 # STATS LOG COLUMNS
 # Values for tab-delimited columns in the Stats.log file.
+
+STATS_TIMESTAMP = 0
 STATS_NETIN = 1
 STATS_NETOUT = 2
 STATS_DISKREAD = 3

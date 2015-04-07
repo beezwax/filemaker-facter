@@ -14,7 +14,7 @@
 ## filemaker_file_count.rb
 
 require 'etc'
-require_relative "filemaker_utils"
+require "facter/filemaker/filemaker_utils"
 
 #
 #       f i l e m a k e r _ f i l e _ c o u n t
@@ -27,8 +27,6 @@ require_relative "filemaker_utils"
 Facter.add('filemaker_file_count') do
 
   has_weight 100
-
-  confine :kernel => :darwin
 
   setcode do
     last_line = last_line_of_log(LOG_STATS)
@@ -48,12 +46,13 @@ Facter.add('filemaker_file_count') do
   # Mac OS Version
   confine :kernel => :darwin
 
-  current_user = Etc.getpwuid(Process.euid).name
+  setcode do
+     current_user = Etc.getpwuid(Process.euid).name
 
-  if current_user == "fmserver"
-    setcode "lsof -Fn | grep -c '\.fmp12$'"
-  elsif current_user == "root"
-    setcode "lsof -u fmserver -Fn | grep -c '\.fmp12$'"
+     if current_user == "fmserver"
+        `lsof -Fn | grep -c '\.fmp12$'`
+     elsif current_user == "root"
+        `lsof -u fmserver -Fn | grep -c '\.fmp12$'`
+     end
   end
-
 end

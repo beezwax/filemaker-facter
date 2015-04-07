@@ -18,15 +18,16 @@ The core Facter components must first be installed seperately.
 
 Facter installers can be found at:
 
-	http://downloads.puppetlabs.com/facter/
-	http://downloads.puppetlabs.com/mac/
+http://downloads.puppetlabs.com/mac/
+http://downloads.puppetlabs.com/windows/
 
-At this time (March 2015) converting scripts to use Facter version 2.4
+When the install is complete, copy the **contents** of the copy_to_facter folder into the /Library/Ruby/Site/facter folder (Mac OS) or the C:\Program Files\Puppet Labs\Puppet\facter\lib\facter folder (Windows).
 
-After Facter is installed, add the .rb files from this project's filemaker-facts into the facter folder. 
+At this time (April 2015) scripts are tested with Facter version 2.4.3
+
 
 crontab usage example:
 ```
 #min    hour    dom    mon    dow    command
-0       8,12,6  *      *      *      /usr/bin/facter macosx_productversion memoryfree sp_uptime filemaker_version filemaker_errors | /usr/bin/mail -s "facter report `/bin/hostname`" simon@beezwax.nodomain
+0       8,12,6  *      *      *      /usr/bin/facter macosx_productversion memoryfree sp_uptime filemaker_version filemaker_errors filemaker_stats_disk | /usr/bin/mail -s "facter report: `/bin/hostname`" simon@beezwax.nodomain
 ```

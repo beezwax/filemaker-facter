@@ -42,7 +42,7 @@ STATS_OPENDBS = 8
 
 ## filemaker_utils.rb
 
-def log_is_current (path)
+def log_is_current(path)
   stats_updated_at = File.ctime(path)
   return (Time.new() - stats_updated_at) < (5*60)
 end

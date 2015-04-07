@@ -12,7 +12,7 @@
 
 require 'etc'
 require "facter"
-require_relative "filemaker_utils"
+require "facter/filemaker/filemaker_utils"
 
 
 Facter.add('filemaker_stats_disk') do

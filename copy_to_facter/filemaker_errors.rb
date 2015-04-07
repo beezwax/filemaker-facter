@@ -13,7 +13,7 @@
 #   2015-04-02 simon_b: Windows version
 
 require 'etc'
-require_relative "filemaker_utils"
+require "facter/filemaker/filemaker_utils"
 
 
 Facter.add('filemaker_errors') do

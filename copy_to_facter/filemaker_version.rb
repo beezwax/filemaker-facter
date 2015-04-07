@@ -12,7 +12,7 @@
 ## filemaker_version.rb
 
 require 'facter'
-require_relative 'filemaker_utils'
+require "facter/filemaker/filemaker_utils"
 
 # Mac Version
 

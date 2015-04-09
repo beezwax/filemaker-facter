@@ -14,9 +14,9 @@
 
 
 require 'optparse'
-require 'yaml'
 require 'net/smtp'
 require 'socket'
+require 'yaml'
 
 # GLOBAL CONSTANTS
 #
@@ -28,13 +28,19 @@ HOSTNAME = Socket.gethostname
 
 # TODO: Use a YAML file for this.
 #
-E_DOMAIN = "beezwax.net"
+E_DOMAIN = "somedomain.com"
 E_FROM = HOSTNAME + "@" + E_DOMAIN
-E_TOS = ["simon_b@beezwax.net"]
+E_TOS = ["simon_b@beezwax.none"]
 E_SUBJECT = "Facter Report: " + HOSTNAME + "." + E_DOMAIN
-#E_SMTP = "mail.beezwax.net"
+#E_SMTP = "mail.somedomain.com"
 E_SMTP = "localhost"
 E_PORT = 25
+
+E_BAR = '<div style="width: %dpx;">%d</div>'
+E_GRAPH_START = '<div class="chart">'
+E_GRAPH_END = '</div>'
+
+# background-color: steelblue;
 
 # GLOBAL VARIABLES
 # (some will get stomped on by OptionParser).
@@ -48,6 +54,20 @@ error_list = []
 raw = ""
 send_email = false
 use_graphs = false
+
+
+def cells_to_tag(c,tag)
+    return map { |c| "<#{tag}>#{c}</#{tag}>" }.join
+end
+
+# Change to class to allow converting to HTML table
+# http://stackoverflow.com/questions/2634024/generate-an-html-table-from-an-array-of-hashes-in-ruby
+
+class Array 
+  def to_cells(tag)
+    self.map { |c| "<#{tag}>#{c}</#{tag}>" }.join
+  end
+end
 
 
 #
@@ -68,14 +88,23 @@ def graph_2_stats_ascii(stat_rows)
    return stat_row
 end
 
-def graph_stat_rows (stat_rows)
-   graph = '<div class="chart">'
+#
+#  g r a p h _ 2 _ s t a t s _ d i v
+#
 
-   for row in 0..(stats_row.count - 1)
-      stats_disk[row] = graph_stat_row(stats_disk[row])
+def graph_2_stats_div (stat_rows)
+
+   glob = ""
+
+   for row in 0..(stat_rows.count - 1)
+      # Clobber the existing array replace with an array of just one string.
+      glob += stat_rows[row][0][0..15] + '<br> ' + E_GRAPH_START + (E_BAR % [stat_rows[row][1],stat_rows[row][1]]) + " " + (E_BAR % [stat_rows[row][2],stat_rows[row][2]]) + E_GRAPH_END
+      #puts stat_rows[row]
    end
 
+   return glob
 end
+
 
 #
 #  s e n d _ e m a i l
@@ -83,15 +112,26 @@ end
 
 def send_email (body)
 
-   puts E_SMTP
-   puts E_DOMAIN
-   puts E_SUBJECT
-   puts E_FROM
-   puts E_TOS
+   # Since we are using HTML formatting, convert line endings to BRs.
+   #body_brd = body.gsub(/\n/, "<br>\n")
 
-   body_brd = body.gsub(/\n/, "<br>\n")
-   puts body_brd
-  puts
+   headers = ["Fact","Values"]
+   cells = body.map do |row|
+      p row
+      if row.class == Array
+         "<tr>#{row.to_cells('td')}</tr>"
+      elsif row.class == Hash
+         "<tr>#{row.values.to_cells('td')}</tr>"
+      else
+         "<tr>#{row}</tr>"
+      end
+   end.join("\n  ")
+
+# removed at this time: #{headers}
+
+body_html = "<table border=1>
+  #{cells}
+</table>"
 
    Net::SMTP.start(E_SMTP, E_PORT) do |smtp|
       smtp.open_message_stream(E_FROM,E_TOS) do |f|
@@ -104,12 +144,11 @@ def send_email (body)
          f.puts '<!DOCTYPE html>'
          f.puts '<font face="Menlo","courier-new","Courier"">'
          f.puts '<style>'
-         f.puts '.chrd div { font: 10px sans-serif; background-color: steelblue; text-align: right; padding: 3px; margin: 1px; color: white; }'
-         f.puts '.chwr div { font: 10px sans-serif; background-color: red; text-align: right; padding: 3px; margin: 1px; color: white; }'
+         f.puts 'table { border: 0px;}'
+         f.puts 'th,td { border: 1px solid LightSteelBlue;}'
+         f.puts '.chart div { font: 10px sans-serif; background-color: steelblue; text-align: right; padding: 3px; margin: 1px; color: white; }'
          f.puts '</style>'
-         f.puts '<div class="chrd">  <div style="width: 40px;">4</div> <div style="width: 80px;">8</div> </div>'
-         f.puts '<div class="chwr">  <div style="width: 40px;">4</div> <div style="width: 80px;">8</div> </div>'
-         f.puts body_brd
+         f.puts body_html
       end
    end
 end
@@ -144,7 +183,7 @@ if true
    # Load up the facts so that we can check for issues.
    facts = YAML.load(raw)
    running_components = facts['filemaker_components']
-   error_list = facts['filemaker_errors']
+   error_list = facts['filemaker_errors'].split("\n")
    file_count = facts['filemaker_file_count']
    stats_disk = facts['filemaker_stats_disk']
    stats_network = facts['filemaker_stats_network']
@@ -153,28 +192,51 @@ if true
    # containing the numeric value and an ASCII graph.
 
    if use_graphs
-      stats_disk = graph_2_stats_ascii(stats_disk)
-      stats_network = graph_2_stat_ascii(stats_network)
+      facts['filemaker_stats_disk'] = graph_2_stats_div(stats_disk)
+      facts['filemaker_stats_network'] = graph_2_stats_div(stats_network)
    end
 
    # Always send email when no checks are specified.
-   send_email = send_email || ((error_list == nil) && (email_files == nil) && (comp_list == nil))
+   send_email = send_email || ((email_errors == 0) && (email_files == 0) && (comp_list == []))
 
-send_email = true
-
-   puts "---",error_list,email_files,comp_list,"---"
+   if true
+      p "send_email",send_email
+      p "error_list",error_list
+      p "email_errors",email_errors
+      p "email_files",email_files
+      p "file_count",file_count.to_f
+      p "comp_list",comp_list
+      p "running_components",running_components
+   end
 
    # Send b/c component(s)s are not online?
    check_failed = check_failed || (comp_list != nil) && ((running_components & comp_list) != comp_list)
 
+p (running_components & comp_list)
+p (running_components & comp_list) != comp_list
+p check_failed
+
    # Send b/c enough errors occured?
-   check_failed = check_failed || (email_errors > 0) && (error_list != nil) && (error_list.count >= email_errors)
+   if error_list.class == String
+      error_count = 1
+   else
+      error_count = error_list.count
+   end
+
+p "error_count",error_count
+
+   check_failed = check_failed || ((email_errors > 0) && (error_count >= email_errors))
+
+p check_failed
 
    # Send b/c too few files are online?
-   check_failed = check_failed || (email_files != nil) && (file_count.to_f < email_files)
+   check_failed = check_failed || (email_files != 0) && (file_count.to_f < email_files)
+
+p check_failed
 
    if send_email | check_failed
-       send_email (YAML.dump(facts))
+       #send_email (YAML.dump(facts))
+       send_email (facts)
    end
 end
 

@@ -25,6 +25,7 @@ def graph_stat_row(stat_row)
    return stat_row
 end
 
+check_failed = false
 comp_list = []
 email_errors = 0
 email_files = 0
@@ -81,18 +82,18 @@ if true
    end
 
    # Always send email when no checks are specified.
-   send_email = send_email | ((error_list == nil) && (email_files == 0) && (comp_list == nil))
+   send_email = send_email || ((error_list == nil) && (email_files == 0) && (comp_list == nil))
 
    # Send b/c component(s)s are not online?
-   send_email = send_email | (comp_list != nil) && ((running_components & comp_list) == comp_list)
+   check_failed = check_failed || (comp_list != nil) && ((running_components & comp_list) != comp_list)
 
    # Send b/c enough errors occured?
-   send_email = send_email | (email_errors > 0) && (error_list != nil) && (error_list.count >= email_errors)
+   check_failed = check_failed || (email_errors > 0) && (error_list != nil) && (error_list.count >= email_errors)
 
    # Send b/c too few files are online?
-   send_email = send_email | (email_files > 0) && (file_count >= email_files)
+   check_failed = check_failed || (email_files != nil) && (file_count.to_f < email_files)
 
-   if send_email
+   if send_email | check_failed
       puts YAML.dump(facts)
    end
 end

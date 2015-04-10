@@ -31,3 +31,11 @@ crontab usage example:
 #min    hour    dom    mon    dow    command
 0       8,12,6  *      *      *      /usr/bin/facter macosx_productversion memoryfree sp_uptime filemaker_version filemaker_errors filemaker_stats_disk | /usr/bin/mail -s "facter report: `/bin/hostname`" simon@beezwax.nodomain
 ```
+
+A still somewhat rough component is the script in filemaker/process_and_email.rb, but even how has some helpful features:
+* convert disk & network stats into graph
+* send email when more than x errors are found
+* send email if required components are not running
+* send email if too few files are online
+
+See the script for current information on usage & abilities

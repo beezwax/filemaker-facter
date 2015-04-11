@@ -32,10 +32,18 @@ crontab usage example:
 0       8,12,6  *      *      *      /usr/bin/facter macosx_productversion memoryfree sp_uptime filemaker_version filemaker_errors filemaker_stats_disk | /usr/bin/mail -s "facter report: `/bin/hostname`" simon@beezwax.nodomain
 ```
 
-A still somewhat rough component is the script in filemaker/process_and_email.rb, but even how has some helpful features:
+##process_and_email.rb
+A still somewhat rough component, this script can be found inside copy_to_facter/filemaker folder. It provides by post-processing the Facter reports it provides a number of features:
 * convert disk & network stats into graph
 * send email when more than x errors are found
 * send email if required components are not running
 * send email if too few files are online
+
+Parameters are:
+* **--components name[,...]** If the named components are not running email is sent
+** component names are: ADMINSERVER, FMSIB, SERVER, WPE, XDBC, fmserver_helperd, httpd, fmslogtrimmer
+* **--errorsSend count** Send  email if at least **count** recent errors
+* **--files count** Send email if less then **count** files are open
+* **--graph** Enable graphing of stats
 
 See the script for current information on usage & abilities

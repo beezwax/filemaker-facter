@@ -19,6 +19,7 @@
 # HISTORY
 #
 # 2015-04-07 simon_b: created file
+# 2015-04-07 simon_b: scaled down div graph size
 
 # TODO
 #
@@ -117,7 +118,7 @@ def graph_2_stats_div (stat_rows)
 
    for row in 0..(stat_rows.count - 1)
       # Clobber the existing array replace with an array of just one string.
-      glob += stat_rows[row][0][0..15] + '<br> ' + E_GRAPH_START + (E_BAR % [stat_rows[row][1],stat_rows[row][1]]) + " " + (E_BAR % [stat_rows[row][2],stat_rows[row][2]]) + E_GRAPH_END
+      glob += stat_rows[row][0][0..15] + '<br> ' + E_GRAPH_START + (E_BAR % [stat_rows[row][1]/2, stat_rows[row][1]]) + " " + (E_BAR % [stat_rows[row][2]/2, stat_rows[row][2]]) + E_GRAPH_END
       #puts stat_rows[row]
    end
 

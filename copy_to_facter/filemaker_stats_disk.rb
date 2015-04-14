@@ -9,6 +9,7 @@
 #
 # HISTORY
 #   2015-04-04 simon_b: Created filed
+#   2015-04-13 simon_b: fix to avoid first line if header
 
 require 'etc'
 require "facter"
@@ -41,6 +42,12 @@ Facter.add('filemaker_stats_disk') do
            sum_timestamp = columns [STATS_TIMESTAMP]
            sum_read = 0.0
            sum_write = 0.0
+
+           # Skip if this is the header.
+           if !columns [STATS_DISKREAD].is_num?
+              break_index += 1
+              next
+           end
         end
 
         sum_read += Float(columns [STATS_DISKREAD])

@@ -5,6 +5,8 @@
 #   2015-02-08 simon_b: added constants
 #   2015-03-27 simon_b: fixed path, added new ones
 #   2015-04-04 simon_b: simplified custom facts by using same names for both Mac & Win
+#   2015-04-13 simon_b: added method to check if string is numeric
+
 
 def is_mac
    (/darwin/ =~ RUBY_PLATFORM) != nil
@@ -42,10 +44,33 @@ STATS_OPENDBS = 8
 
 ## filemaker_utils.rb
 
+
+#
+#  i s _ n u m ?
+#
+
+class String
+   def is_num?
+      begin
+         !!Float(self)
+      rescue ArgumentError, TypeError
+         false
+      end
+   end
+end
+
+#
+#   l o g _ i s _ c u r r e n t
+#
+
 def log_is_current(path)
   stats_updated_at = File.ctime(path)
   return (Time.new() - stats_updated_at) < (5*60)
 end
+
+#
+#   t a i l
+#
 
 # From http://stackoverflow.com/questions/754494/reading-the-last-n-lines-of-a-file-in-ruby/28221975
 

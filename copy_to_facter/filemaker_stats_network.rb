@@ -51,8 +51,6 @@ Facter.add('filemaker_stats_network') do
            end
         end
 
-        end
-
         sum_in += Float(columns [STATS_NETIN])
         sum_out += Float(columns [STATS_NETOUT])
 

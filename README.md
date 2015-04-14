@@ -45,8 +45,8 @@ This script can be found inside copy_to_facter/filemaker folder. By post-process
 
 Parameters are:
 * **--components name[,...]** If the named components are not running email is sent
-..* component names are: ADMINSERVER, FMSIB, SERVER, WPE, XDBC, fmserver_helperd, httpd, fmslogtrimmer
-* **--errorsSend count** Send  email if at least **count** recent errors
+  - component names are: ADMINSERVER, FMSIB, SERVER, WPE, XDBC, fmserver_helperd, httpd, fmslogtrimmer
+* **--errors count** Send  email if at least **count** recent errors
 * **--files count** Send email if less then **count** files are open
 * **--graph** Enable graphing of stats
 

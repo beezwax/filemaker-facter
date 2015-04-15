@@ -25,7 +25,7 @@ Facter can often also be installed using the **gem** command:
 ```
 sudo gem install facter
 ```
-When the install is complete, copy the **contents** of the **copy_to_facter** folder into facter's folder. With the installer image, this will be the **/Library/Ruby/Site/facter** folder (Mac OS) or **C:\Program Files\Puppet Labs\Puppet\facter\lib\facter** folder (Windows).
+When the install is complete, copy the _contents_ of the **copy_to_facter** folder into facter's folder. With the installer image, this will be the **/Library/Ruby/Site/facter** folder (Mac OS) or **C:\Program Files\Puppet Labs\Puppet\facter\lib\facter** folder (Windows).
 
 At this time (April 2015) scripts are tested with Facter version 2.4.3
 
@@ -37,11 +37,13 @@ crontab usage example:
 ```
 
 ###process_and_email.rb
-This script can be found inside copy_to_facter/filemaker folder. By post-processing the Facter reports it provides a number of features:
+This script can be found inside **copy_to_facter/filemaker** folder. By post-processing the Facter reports it provides a number of features:
 * convert disk & network stats into graph
 * send email when more than x errors are found
 * send email if required components are not running
 * send email if too few files are online
+
+In order for the email feature to work, you must edit the script to set various email related variables.
 
 Parameters are:
 * **--components name[,...]** If the named components are not running email is sent
@@ -50,4 +52,25 @@ Parameters are:
 * **--files count** Send email if less then **count** files are open
 * **--graph** Enable graphing of stats
 
+**Usage Examples**
+Email selected facts, graphing the stats:
+```
+/usr/bin/facter -y macosx_productversion memoryfree sp_uptime filemaker_version filemaker_components filemaker_errors filemaker_file_count filemaker_stats_disk filemaker_stats_network | /Library/Ruby/Site/facter/filemaker/process_and_email.rb --graph
+```
+
+Email if the specified components are not running, fewer then 20 files are online, or more then 5 errors in log:
+```
+/usr/bin/facter -y | /Library/Ruby/Site/facter/filemaker/process_and_email.rb --graph --components ADMINSERVER,FMSE,SERVER,WPE,httpd --files 20 --errors 5
+```
+
 This script is still a work in progress, so See the script for current information on usage & abilities.
+
+###TO-DO'S
+* process_and_email
+  - handle incorrectly formatted or missing data better
+  - allow specifying graph step amount
+  - specify email related parameters from command line or file
+* return recent wait times
+* check for high wait times
+* return count of recent WebDirect clients
+* return count of recent FMP clients

@@ -53,6 +53,7 @@ Parameters are:
 * **--graph** Enable graphing of stats
 
 **Usage Examples**
+
 Email selected facts, graphing the stats:
 ```
 /usr/bin/facter -y macosx_productversion memoryfree sp_uptime filemaker_version filemaker_components filemaker_errors filemaker_file_count filemaker_stats_disk filemaker_stats_network | /Library/Ruby/Site/facter/filemaker/process_and_email.rb --graph
@@ -70,6 +71,7 @@ This script is still a work in progress, so See the script for current informati
   - handle incorrectly formatted or missing data better
   - allow specifying graph step amount
   - specify email related parameters from command line or file
+  - allow components to be specified in any order (see issue #1)
 * return recent wait times
 * check for high wait times
 * return count of recent WebDirect clients

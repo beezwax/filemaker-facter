@@ -20,7 +20,8 @@
 #
 # 2015-04-07 simon_b: created file
 # 2015-04-07 simon_b: scaled down div graph size
-
+# 2015-04-16 simon_b: div graphs now take optional step incremement parameter
+# 
 # TODO
 #
 #  windows compatible?
@@ -112,13 +113,13 @@ end
 #  g r a p h _ 2 _ s t a t s _ d i v
 #
 
-def graph_2_stats_div (stat_rows)
+def graph_2_stats_div (stat_rows,step=10)
 
    glob = ""
 
    for row in 0..(stat_rows.count - 1)
       # Clobber the existing array replace with an array of just one string.
-      glob += stat_rows[row][0][0..15] + '<br> ' + E_GRAPH_START + (E_BAR % [stat_rows[row][1]/2, stat_rows[row][1]]) + " " + (E_BAR % [stat_rows[row][2]/2, stat_rows[row][2]]) + E_GRAPH_END
+      glob += stat_rows[row][0][0..15] + '<br> ' + E_GRAPH_START + (E_BAR % [stat_rows[row][1] / step, stat_rows[row][1]]) + " " + (E_BAR % [stat_rows[row][2] / 10, stat_rows[row][2]]) + E_GRAPH_END
       #puts stat_rows[row]
    end
 
@@ -221,7 +222,14 @@ if true
 
    # Load up the facts so that we can check for issues.
    facts = YAML.load(raw)
+
    running_components = facts[F_COMPONENTS]
+
+   # Need to sort list as intersection function is picky about the order values are specified in.
+   if running_components != nil
+      running_components.sort!
+   end
+  
    error_list = facts[F_ERRORS]
    if error_list != nil
       error_list = error_list.split("\n")
@@ -243,20 +251,22 @@ if true
 
    # Below only used for debugging.
    if false
-      p "send_email",send_email
-      p "error_list",error_list
-      p "email_errors",email_errors
-      p "email_files",email_files
-      p "file_count",file_count.to_f
-      p "comp_list",comp_list
-      p "running_components",running_components
+      p "send_email: %d" % send_email
+      p "error_list: %s" % error_list
+      p "email_errors: %d" % email_errors
+      p "email_files: %d" % email_files
+      p "file_count: %d" % file_count.to_f
+      p "comp_list: %s" % comp_list
+      p "running_components: %s" % running_components
    end
 
-   # Send b/c component(s)s are not online?
-   # Sort component names before doing intersection between arrays?
+   # Send email b/c component(s)s are not online?
 
-   # Are the required components running? 
-   $check_failed = $check_failed || (comp_list != nil) && ((running_components & comp_list) != comp_list)
+   # Are the required components running?
+   if !$check_failed && (comp_list != nil)
+      comp_list.sort!
+      $check_failed = (running_components & comp_list) != comp_list
+   end
 
    # Send b/c enough errors occured?
    if error_list.class == String

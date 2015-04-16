@@ -256,7 +256,7 @@ if true
    send_email = send_email || (($email_errors == 0) && ($email_files == 0) && (comp_list == []))
 
    # Below only used for debugging.
-   if true
+   if false
       p "graph_increment: %d" % $graph_increment
       p "send_email: %s" % send_email
       p "error_list: %s" % error_list

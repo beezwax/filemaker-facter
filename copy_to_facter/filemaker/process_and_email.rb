@@ -20,7 +20,7 @@
 #
 # 2015-04-07 simon_b: created file
 # 2015-04-07 simon_b: scaled down div graph size
-# 2015-04-16 simon_b: div graphs now take optional step incremement parameter
+# 2015-04-16 simon_b: graphs now take optional step incremement parameter
 # 
 # TODO
 #
@@ -48,7 +48,7 @@ HOSTNAME = Socket.gethostname
 #
 E_DOMAIN = "beezwax.net"
 E_FROM = HOSTNAME + "@" + E_DOMAIN
-E_TOS = ["someone@beezwax.com"]
+E_TOS = ["noone@somedomain.com"]
 E_SUBJECT_REPORT = "Facter Report: " + HOSTNAME + "." + E_DOMAIN
 E_SUBJECT_ALERT = "Facter Alert: " + HOSTNAME + "." + E_DOMAIN
 #E_SMTP = "smtp.somedomain.com"
@@ -70,11 +70,11 @@ F_STATS_NETWORK = 'filemaker_stats_network'
 # (some will get stomped on by OptionParser).
 #
 $check_failed = false
-$use_graphs = false
+$email_errors = 0
+$email_files = 0
+$graph_increment = 20
 
 comp_list = []
-email_errors = 0
-email_files = 0
 email_list = []
 error_list = []
 raw = ""
@@ -90,12 +90,11 @@ class Array
   end
 end
 
-
 #
-#  g r a p h _ 2 _ s t a t s _ a s c i i
+#  g r a p h _ a r r a y _ a s c i i
 #
 
-def graph_2_stats_ascii(stat_rows)
+def graph_array_ascii(stat_rows)
    # filemaker_stats_disk => [["2015-04-01 11:37:03.030 -0700", 1649.0, 679.0], ["2015-04-02 11:37:03.346 -0700", 149.0, 318.0], ["2015-04-03 11:37:03.176 -0700", 24.0, 232.0], ["2015-04-04 11:37:03.
 
    for row in 0..(stat_rows.count - 1) 
@@ -110,16 +109,19 @@ def graph_2_stats_ascii(stat_rows)
 end
 
 #
-#  g r a p h _ 2 _ s t a t s _ d i v
+#  g r a p h _ a r r a y _ d i v
 #
 
-def graph_2_stats_div (stat_rows,step=10)
+# increment: amount to divide value by (eg, changes how much is required for each step in graph)
+# stat_rows: an array of one or more rows of values to be graphed
+
+def graph_array_div (stat_rows,increment=10)
 
    glob = ""
 
    for row in 0..(stat_rows.count - 1)
       # Clobber the existing array replace with an array of just one string.
-      glob += stat_rows[row][0][0..15] + '<br> ' + E_GRAPH_START + (E_BAR % [stat_rows[row][1] / step, stat_rows[row][1]]) + " " + (E_BAR % [stat_rows[row][2] / 10, stat_rows[row][2]]) + E_GRAPH_END
+      glob += stat_rows[row][0][0..15] + '<br> ' + E_GRAPH_START + (E_BAR % [stat_rows[row][1] / increment, stat_rows[row][1]]) + " " + (E_BAR % [stat_rows[row][2] / increment, stat_rows[row][2]]) + E_GRAPH_END
       #puts stat_rows[row]
    end
 
@@ -134,7 +136,7 @@ end
 def send_email (body)
 
    # Since we are using HTML formatting, convert line endings to BRs.
-   if !$use_graphs
+   if $graph_increment == 0
       body_yaml =YAML.dump(body)
       body_html = body_yaml.gsub(/\n/, "<br>\n")
    else
@@ -175,7 +177,7 @@ body_html = "<table border=1>
          f.puts 'MIME-Version: 1.0'
          f.puts 'Content-type: text/html'
 
-         if $use_graphs
+         if $graph_increment > 0
             f.puts
             f.puts '<!DOCTYPE html>'
             f.puts '<font size=2 face="Menlo","courier-new","Courier">'
@@ -202,15 +204,19 @@ OptionParser.new do |opts|
    end
 
    opts.on('--errors [count]', Float, 'Send email if errors were logged') do |errors|
-      email_errors = errors
+      if errors != nil && errors > 0
+         $email_errors = errors
+      end
    end
 
    opts.on('--files [count]', Float, 'Send email if there is not at least 1 or count files open') do |files|
-      email_files = files
+      $email_files = files
    end
 
-   opts.on('--[no-]graph', 'Add ASCII graph to stats') do |graph|
-      $use_graphs = graph
+   opts.on('--graph [increment]', Float, 'Add ASCII graph to stats') do |graph|
+      if graph != nil && graph > 0
+         $graph_increment = graph
+      end
    end
 
 end.parse!
@@ -240,24 +246,25 @@ if true
    # When using graphing, we replace the existing numeric values with a string
    # containing the numeric value and an ASCII graph.
 
-   if $use_graphs
+   if $graph_increment > 0
       # Have switch to use ASCII graphs instead?
-      facts[F_STATS_DISK] = graph_2_stats_div(facts [F_STATS_DISK])
-      facts[F_STATS_NETWORK] = graph_2_stats_div(facts [F_STATS_NETWORK])
+      facts[F_STATS_DISK] = graph_array_div(facts [F_STATS_DISK], $graph_increment)
+      facts[F_STATS_NETWORK] = graph_array_div(facts [F_STATS_NETWORK], $graph_increment)
    end
 
    # Always send email when no checks are specified.
-   send_email = send_email || ((email_errors == 0) && (email_files == 0) && (comp_list == []))
+   send_email = send_email || (($email_errors == 0) && ($email_files == 0) && (comp_list == []))
 
    # Below only used for debugging.
-   if false
-      p "send_email: %d" % send_email
+   if true
+      p "graph_increment: %d" % $graph_increment
+      p "send_email: %s" % send_email
       p "error_list: %s" % error_list
-      p "email_errors: %d" % email_errors
-      p "email_files: %d" % email_files
+      p "email_errors: %d" % $email_errors
+      p "email_files: %d" % $email_files
       p "file_count: %d" % file_count.to_f
-      p "comp_list: %s" % comp_list
-      p "running_components: %s" % running_components
+      p "comp_list: %s" % comp_list.to_s
+      p "running_components: %s" % running_components.to_s
    end
 
    # Send email b/c component(s)s are not online?
@@ -278,10 +285,10 @@ if true
    end
 
    # Too many errors found in Event log?
-   $check_failed = $check_failed || ((email_errors > 0) && (error_count >= email_errors))
+   $check_failed = $check_failed || (($email_errors > 0) && (error_count >= $email_errors))
 
    # Send b/c too few files are online?
-   $check_failed = $check_failed || (email_files != 0) && (file_count.to_f < email_files)
+   $check_failed = $check_failed || ($email_files != 0) && (file_count.to_f < $email_files)
 
    if send_email | $check_failed
        #send_email (YAML.dump(facts))

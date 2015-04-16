@@ -11,6 +11,7 @@
 #   2015-02-07 simon_b: created file
 #   2015-04-02 simon_b: working Mac OS version
 #   2015-04-05 simon_b: code now wrapped in setcode to avoid error on Windows
+#   2015-04-16 simon_b: minor change to the order components are returned in
 
 ## filemaker_components.rb
 
@@ -36,12 +37,12 @@ Facter.add('filemaker_components') do
        running.push("ADMINSERVER")
      end
 
-     if raw.include? "bin/fmsib"
-        running.push("FMSIB")
-     end
-
      if raw.include? "bin/fmsased"
         running.push("FMSE")
+     end
+
+     if raw.include? "bin/fmsib"
+        running.push("FMSIB")
      end
 
      if raw.include? "bin/fmserverd"

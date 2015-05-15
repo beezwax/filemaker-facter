@@ -69,9 +69,7 @@ This script is still a work in progress, so See the script for current informati
 ###TO-DO'S
 * process_and_email
   - handle incorrectly formatted or missing data better
-  - allow specifying graph step amount
   - specify email related parameters from command line or file
-  - allow components to be specified in any order (see issue #1)
 * return recent wait times
 * check for high wait times
 * return count of recent WebDirect clients

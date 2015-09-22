@@ -20,7 +20,7 @@ Facter.add('filemaker_errors') do
 
   setcode do
      # Change these if too few/too many errors getting reported.
-     events_to_check = 500
+     events_to_check = 300
      max_errors = 10
 
      # Get recent FMS event data.

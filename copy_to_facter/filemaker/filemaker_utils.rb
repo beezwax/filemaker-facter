@@ -6,7 +6,7 @@
 #   2015-03-27 simon_b: fixed path, added new ones
 #   2015-04-04 simon_b: simplified custom facts by using same names for both Mac & Win
 #   2015-04-13 simon_b: added method to check if string is numeric
-
+#   2015-11-25 simon_b: modified fmsadmin path after change to FMS 14.0v4
 
 def is_mac
    (/darwin/ =~ RUBY_PLATFORM) != nil
@@ -15,7 +15,9 @@ end
 # Paths to commands used.
 if is_mac
    AWK_MAC = "/usr/bin/awk"
-   FMSADMIN = "/usr/bin/fmsadmin"
+   # Not the same path used by shell, but this is consistent between FMS versions.
+   # The spaces in path are problematic, even escaping with backslashes would fail.
+   FMSADMIN = "'/Library/FileMaker Server/Database Server/bin/fmsadmin'"
 else
    FMSADMIN = "C:/Program Files/FileMaker/FileMaker Server/fmsadmin"
 end

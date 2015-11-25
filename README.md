@@ -18,8 +18,8 @@ The core Facter components must first be installed seperately.
 
 Facter installers can be found at:
 
-http://downloads.puppetlabs.com/mac/
-http://downloads.puppetlabs.com/windows/
+* http://downloads.puppetlabs.com/mac/
+* http://downloads.puppetlabs.com/windows/
 
 Facter can often also be installed using the **gem** command:
 ```
@@ -29,15 +29,20 @@ When the install is complete, copy the _contents_ of the **copy_to_facter** fold
 
 At this time (April 2015) scripts are tested with Facter version 2.4.3
 
+## Crontab Example
 
-crontab usage example:
+On Mac OS systems, a crontab entry is a convenient way to send regular reports.
+
+Here, we assume email (postfix) is configured on the local system. This allows us to use the **mail** command to send out the reports. Additionaly, we specify the specific facters we want in the report (if these are omitted all values are included).
+
 ```
 #min    hour    dom    mon    dow    command
-0       8,12,6  *      *      *      /usr/bin/facter macosx_productversion memoryfree sp_uptime filemaker_version filemaker_errors filemaker_stats_disk | /usr/bin/mail -s "facter report: `/bin/hostname`" simon@beezwax.nodomain
+0       8,12,6  *      *      *      /usr/bin/facter macosx_productversion memoryfree sp_uptime filemaker_errors filemaker_stats_disk filemaker_version | /usr/bin/mail -s "facter report: `/bin/hostname`" simon@beezwax.nodomain
 ```
 
-###process_and_email.rb
-This script can be found inside **copy_to_facter/filemaker** folder. By post-processing the Facter reports it provides a number of features:
+##process_and_email.rb
+
+For some additional functionality, including some basic monitoring functions, there is a helper script you can use inside of **copy_to_facter/filemaker** folder. This script does post-processing of the Facter reports, and provides the following features:
 * convert disk & network stats into graph
 * send email when more than x errors are found
 * send email if required components are not running

@@ -22,15 +22,28 @@ Facter.add('filemaker_errors') do
      # Change these if too few/too many errors getting reported.
      events_to_check = 300
      max_errors = 10
+     max_seconds = 2*60*60 - 1  # 2 hours, minus a second
+     oldest_error = Time.at (Time.now - max_seconds)
 
      # Get recent FMS event data.
      raw=tail(LOG_EVENTS,events_to_check)
      error_lines = raw.scan(/.*\tError\t.*/)
 
      if error_lines != []
+        # Going backwards would have some advantages, but I'll use a simpler approach here.
+        error_lines.each { |line|
+           if Time.parse (line[0..24]) >= oldest_error
+
+        xxxxxxxxxxx
+
         # Restrict to the last errors found.
+
+
+
         max_errors = [max_errors,error_lines.count].min
         error_lines_last = error_lines[-max_errors, max_errors]
+
+
 
         # This could've been returned as a structured result, but it is a bit more readable as string.
         error_lines_last.join("\n")

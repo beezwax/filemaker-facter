@@ -7,10 +7,31 @@
 #   2015-04-04 simon_b: simplified custom facts by using same names for both Mac & Win
 #   2015-04-13 simon_b: added method to check if string is numeric
 #   2015-11-25 simon_b: modified fmsadmin path after change to FMS 14.0v4
+#   2016-01-05 simon_b: added configuration constants
+#
+# CONFIGURATION CONSTANTS
+#
+
+# Change these if too few/too many errors getting reported.
+EVENTS_TO_CHECK = 100
+
+# How far to go back in logs (time based). 
+MAX_SECONDS = 2*60*60 - 1  # 2 hours, minus a second
+
+# Maximum number of errors to return for result.
+MAX_ERRORS = 5
+
+#
+# is_mac
+#
 
 def is_mac
    (/darwin/ =~ RUBY_PLATFORM) != nil
 end
+
+#
+# MAIN
+#
 
 # Paths to commands used.
 if is_mac

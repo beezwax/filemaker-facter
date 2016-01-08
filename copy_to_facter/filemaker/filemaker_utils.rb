@@ -9,6 +9,8 @@
 #   2015-11-25 simon_b: modified fmsadmin path after change to FMS 14.0v4
 #   2016-01-05 simon_b: added configuration constants
 #
+
+#
 # CONFIGURATION CONSTANTS
 #
 
@@ -16,7 +18,7 @@
 EVENTS_TO_CHECK = 100
 
 # How far to go back in logs (time based). 
-MAX_SECONDS = 2*60*60 - 1  # 2 hours, minus a second
+MAX_SECONDS = 2*60*60  # 720 seconds, or 2 hours
 
 # Maximum number of errors to return for result.
 MAX_ERRORS = 5
@@ -28,6 +30,7 @@ MAX_ERRORS = 5
 def is_mac
    (/darwin/ =~ RUBY_PLATFORM) != nil
 end
+
 
 #
 # MAIN

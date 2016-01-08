@@ -3,9 +3,11 @@
 # PURPOSE: List the components that are currently running
 #
 # NOTES:
-#   Assumes logging interval is set to the default 30 second interval and the Event.log has not been rolled recently.
+#
+#   No Windows version at this time.
+#
 #   Testing looks like this:
-#     export FACTERLIB="/Users/simon_b/filemaker-facter/filemaker-facts"; facter -d filemaker_file_count
+#     export FACTERLIB="/Users/simon_b/filemaker-facter/filemaker-facts"; facter -d filemaker_components
 #
 # HISTORY
 #   2015-02-07 simon_b: created file

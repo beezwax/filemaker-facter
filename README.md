@@ -1,7 +1,7 @@
 # filemaker-facter
 Facter custom facts for reporting FileMaker Server statistics and status
 
-The files here implement what are called "custom facts" for Facter based reporting with FileMaker Servers. Additionally, there is a helper script that email alerts when certain conditions are met.
+The files here implement what are called "custom facts" for Facter based reporting with FileMaker Servers. Additionally, there is a helper script that can email alerts when certain conditions are met.
 
 Currently working facts are:
 
@@ -14,7 +14,11 @@ Currently working facts are:
 | filemaker_stats_network | network bytes for week, broken out by 24-hour period |
 | filemaker_version       | version of FileMaker Server |
 
-The core Facter components must first be installed seperately.
+At this time (April 2015) scripts are tested with Facter version 2.4.3
+
+## Installation & Configuration
+
+The core Facter components must first be installed separately.
 
 Facter installers can be found at:
 
@@ -27,13 +31,15 @@ sudo gem install facter
 ```
 When the install is complete, copy the _contents_ of the **copy_to_facter** folder into facter's folder. With the installer image, this will be the **/Library/Ruby/Site/facter** folder (Mac OS) or **C:\Program Files\Puppet Labs\Puppet\facter\lib\facter** folder (Windows).
 
-At this time (April 2015) scripts are tested with Facter version 2.4.3
+Error event settings can be adjusted in the file at **facter/filemaker/filemaker_utils.rb**.
+
+For some functions to work, **Usage Statistics** logging must be enabled in the FileMaker Server Admin Console. You can find this in the Logging panel in the Database Server section, then checking the **Usage statistics** option.
 
 ## Crontab Example
 
-On Mac OS systems, a crontab entry is a convenient way to send regular reports.
+On OS X systems, a crontab entry is a convenient way to send regular reports.
 
-Here, we assume email (postfix) is configured on the local system. This allows us to use the **mail** command to send out the reports. Additionaly, we specify the specific facters we want in the report (if these are omitted all values are included).
+Here, we assume email (typically Postfix SMTP) is configured on the local system. Enabling Mail with Server.app will accomplish this, or search online for how to configure a Postfix STMP relay. When configured, this allows us to use the **mail** command to pipe out the reports. Additionaly, in the crontab entry example, the specific facters we want in the report are listed (if these are omitted all values are included).
 
 ```
 #min    hour    dom    mon    dow    command
@@ -42,8 +48,9 @@ Here, we assume email (postfix) is configured on the local system. This allows u
 
 ##process_and_email.rb
 
-For some additional functionality, including some basic monitoring functions, there is a helper script you can use inside of **copy_to_facter/filemaker** folder. This script does post-processing of the Facter reports, and provides the following features:
+For additional functionality, including some basic monitoring functions, there is a helper script you can use inside of **copy_to_facter/filemaker** folder. This script does post-processing of the Facter reports, and provides the following features:
 * convert disk & network stats into graph
+* send via SMTP client (no need to configure Postfix)
 * send email when more than x errors are found
 * send email if required components are not running
 * send email if too few files are online

@@ -4,6 +4,7 @@
 #
 # NOTES:
 #   Assumes logging interval is set to the default 30 second interval and the Event.log has not been rolled recently.
+#
 #   Testing looks like this:
 #     export FACTERLIB="/Users/simon_b/filemaker-facter/filemaker-facts"; facter -d filemaker_errors
 #

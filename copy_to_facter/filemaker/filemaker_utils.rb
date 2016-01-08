@@ -15,7 +15,8 @@
 #
 
 # Change these if too few/too many errors getting reported.
-EVENTS_TO_CHECK = 100
+# However, changing MAX_SECONDS may be the better choice.
+EVENTS_TO_CHECK = 200
 
 # How far to go back in logs (time based). 
 MAX_SECONDS = 2*60*60  # 720 seconds, or 2 hours

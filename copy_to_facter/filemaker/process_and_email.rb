@@ -21,6 +21,8 @@
 # 2015-04-07 simon_b: created file
 # 2015-04-07 simon_b: scaled down div graph size
 # 2015-04-16 simon_b: graphs now take optional step incremement parameter
+# 2016-01-07 simon_b: changed the doctype to use the commonly used xHTML strict form
+# 2016-01-07 simon_b: now flagging errors & component issues out of range
 # 
 # TODO
 #
@@ -37,7 +39,8 @@ require 'yaml'
 
 # GLOBAL CONSTANTS
 #
-# For ASCII graph, the amount for each step of bar graph.
+# ASCII graph: value per step of bar graph.
+# HTML graphs default to value in $graph_increment
 INCR = 200
 
 # email settings
@@ -67,12 +70,12 @@ F_STATS_NETWORK = 'filemaker_stats_network'
 # background-color: steelblue;
 
 # GLOBAL VARIABLES
-# (some will get stomped on by OptionParser).
+# (may get overridden by OptionParser).
 #
 $check_failed = false
 $email_errors = 0
 $email_files = 0
-$graph_increment = 20
+$graph_increment = 100
 
 comp_list = []
 email_list = []
@@ -133,7 +136,7 @@ end
 #  s e n d _ e m a i l
 #
 
-def send_email (body)
+def sendEmail (body)
 
    # Since we are using HTML formatting, convert line endings to BRs.
    if $graph_increment == 0
@@ -165,26 +168,31 @@ body_html = "<table border=1>
          f.puts 'To: ' + E_TOS.join(',')
 
          if $check_failed
-         f.puts 'Subject: ' + E_SUBJECT_ALERT
+            subject_title = E_SUBJECT_ALERT
+            f.puts 'Subject: ' + subject_title
             # Set high priority.
             f.puts 'X-Priority: 1'
          else
-            f.puts 'Subject: ' + E_SUBJECT_REPORT
+            subject_title = E_SUBJECT_REPORT
+            f.puts 'Subject: ' + subject_title
             # Set low priority as used by Mail.app.
             f.puts 'X-Priority: 5'
          end
 
          f.puts 'MIME-Version: 1.0'
          f.puts 'Content-type: text/html'
+         f.puts '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">'
+         f.puts '<html xmlns="http://www.w3.org/1999/xhtml">'
+         f.puts '<head>'
+         f.puts    '<title>' + subject_title + '</title>'
+         f.puts '</head>'
+         f.puts '<font size=2 face="Menlo","courier-new","Courier">'
 
          if $graph_increment > 0
-            f.puts
-            f.puts '<!DOCTYPE html>'
-            f.puts '<font size=2 face="Menlo","courier-new","Courier">'
             f.puts '<style>'
-            f.puts 'table { border: 0px;}'
-            f.puts 'th,td { border: 1px solid LightSteelBlue;}'
-            f.puts '.chart div { font: 10px sans-serif; background-color: steelblue; text-align: right; padding: 3px; margin: 1px; color: white; }'
+            f.puts    'table { border: 0px;}'
+            f.puts    'th,td { border: 1px solid LightSteelBlue;}'
+            f.puts    '.chart div { font: 10px sans-serif; background-color: steelblue; text-align: right; padding: 3px; margin: 1px; color: white; }'
             f.puts '</style>'
          end
 
@@ -272,7 +280,10 @@ if true
    # Are the required components running?
    if !$check_failed && (comp_list != nil)
       comp_list.sort!
-      $check_failed = (running_components & comp_list) != comp_list
+      if (running_components & comp_list) != comp_list
+         $check_failed = true
+         facts[F_COMPONENTS] = '<b>' + facts [F_COMPONENTS] + '</b>'
+      end
    end
 
    # Send b/c enough errors occured?
@@ -285,14 +296,17 @@ if true
    end
 
    # Too many errors found in Event log?
-   $check_failed = $check_failed || (($email_errors > 0) && (error_count >= $email_errors))
+   if (($email_errors > 0) && (error_count >= $email_errors))
+      $check_failed = true
+      facts[F_ERRORS] = '<b>' + facts [F_ERRORS] + '</b>'
+   end
 
    # Send b/c too few files are online?
    $check_failed = $check_failed || ($email_files != 0) && (file_count.to_f < $email_files)
 
    if send_email | $check_failed
-       #send_email (YAML.dump(facts))
-       send_email (facts)
+       #sendEmail (YAML.dump(facts))
+       sendEmail (facts)
    end
 end
 

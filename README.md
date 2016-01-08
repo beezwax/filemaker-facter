@@ -1,3 +1,5 @@
+![Beezwax Logo](https://blog.beezwax.net/wp-content/uploads/2016/01/beezwax-logo-github.png)
+
 # filemaker-facter
 Facter custom facts for reporting FileMaker Server statistics and status
 
@@ -86,3 +88,7 @@ This script is still a work in progress, so See the script for current informati
 * check for high wait times
 * return count of recent WebDirect clients
 * return count of recent FMP clients
+
+- - -
+<h6>Built by <a href="http://beezwax.net">Beezwax</a</h6>
+

@@ -41,7 +41,7 @@ For some functions to work, **Usage Statistics** logging must be enabled in the 
 
 On OS X systems, a crontab entry is a convenient way to send regular reports.
 
-Here, we assume email (typically Postfix SMTP) is configured on the local system. Enabling Mail with Server.app will accomplish this, or search online for how to configure a Postfix STMP relay. When configured, this allows us to use the **mail** command to pipe out the reports. Additionaly, in the crontab entry example, the specific facters we want in the report are listed (if these are omitted all values are included).
+Here, we assume email (typically Postfix SMTP) is configured on the local system. Enabling Mail with Server.app will accomplish this, or search online for how to configure a Postfix STMP relay. When enabled, this allows us to use the **mail** command to pipe out the reports. Additionaly, in the crontab entry example, the specific facters we want in the report are listed (if these are omitted all values are included).
 
 ```
 #min    hour    dom    mon    dow    command
@@ -51,8 +51,8 @@ Here, we assume email (typically Postfix SMTP) is configured on the local system
 ##process_and_email.rb
 
 For additional functionality, including some basic monitoring functions, there is a helper script you can use inside of **copy_to_facter/filemaker** folder. This script does post-processing of the Facter reports, and provides the following features:
-* convert disk & network stats into graph
 * send via SMTP client (no need to configure Postfix)
+* convert disk & network stats into graph
 * send email when more than x errors are found
 * send email if required components are not running
 * send email if too few files are online

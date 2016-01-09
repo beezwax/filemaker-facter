@@ -81,7 +81,7 @@ comp_list = []
 email_list = []
 error_list = []
 raw = ""
-send_email = false
+send_flag = false
 
 
 # Change to class to allow converting to HTML table
@@ -123,9 +123,8 @@ def graph_array_div (stat_rows,increment=10)
    glob = ""
 
    for row in 0..(stat_rows.count - 1)
-      # Clobber the existing array replace with an array of just one string.
+      # Clobber the existing array and replace with a string of HTML.
       glob += stat_rows[row][0][0..15] + '<br> ' + E_GRAPH_START + (E_BAR % [stat_rows[row][1] / increment, stat_rows[row][1]]) + " " + (E_BAR % [stat_rows[row][2] / increment, stat_rows[row][2]]) + E_GRAPH_END
-      #puts stat_rows[row]
    end
 
    return glob
@@ -136,7 +135,7 @@ end
 #  s e n d _ e m a i l
 #
 
-def sendEmail (body)
+def send_email (body)
 
    # Since we are using HTML formatting, convert line endings to BRs.
    if $graph_increment == 0
@@ -200,7 +199,7 @@ body_html = "<table border=1>
          f.puts body_html
       end
    end
-end
+end  # send_email
 
 
 OptionParser.new do |opts|
@@ -261,12 +260,12 @@ if true
    end
 
    # Always send email when no checks are specified.
-   send_email = send_email || (($email_errors == 0) && ($email_files == 0) && (comp_list == []))
+   send_flag = send_flag || (($email_errors == 0) && ($email_files == 0) && (comp_list == []))
 
    # Below only used for debugging.
    if false
       p "graph_increment: %d" % $graph_increment
-      p "send_email: %s" % send_email
+      p "send_flag: %s" % send_flag
       p "error_list: %s" % error_list
       p "email_errors: %d" % $email_errors
       p "email_files: %d" % $email_files
@@ -304,9 +303,9 @@ if true
    # Send b/c too few files are online?
    $check_failed = $check_failed || ($email_files != 0) && (file_count.to_f < $email_files)
 
-   if send_email | $check_failed
-       #sendEmail (YAML.dump(facts))
-       sendEmail (facts)
+   if send_flag | $check_failed
+       #send_email (YAML.dump(facts))
+       send_email (facts)
    end
 end
 

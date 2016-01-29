@@ -57,9 +57,19 @@ For additional functionality, including some basic monitoring functions, there i
 * send email if required components are not running
 * send email if too few files are online
 
+### Configuration
+
 In order for the email feature to work, you must edit the script to set various email related variables.
 
-Parameters are:
+* E_DOMAIN: domain name for server's email
+* E_TOS: email addresses to send email to
+* E_SMTP: host name of SMTP server to use
+* E_PORT: port number to use for SMTP connection (if you need to use encryption or authentication you will have to modify the send_email function)
+
+### Parameters
+
+The process_and_email command accepts four parameters used to set how results are returned and values to check for.
+
 * **--components name[,...]** If the named components are not running email is sent
   - component names are: ADMINSERVER, FMSIB, SERVER, WPE, XDBC, fmserver_helperd, httpd, fmslogtrimmer
 * **--errors count** Send  email if at least **count** recent errors

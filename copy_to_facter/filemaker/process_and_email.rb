@@ -32,8 +32,8 @@
 #  accept To: addresses as command options
 
  
-require 'optparse'
 require 'net/smtp'
+require 'optparse'
 require 'socket'
 require 'yaml'
 
@@ -47,7 +47,7 @@ INCR = 200
 
 HOSTNAME = Socket.gethostname
 
-# TODO: Use a YAML file for this.
+# TODO: Use a YAML file for this?
 #
 E_DOMAIN = "beezwax.net"
 E_FROM = HOSTNAME + "@" + E_DOMAIN
@@ -67,12 +67,19 @@ F_ERRORS = 'filemaker_errors'
 F_STATS_DISK = 'filemaker_stats_disk'
 F_STATS_NETWORK = 'filemaker_stats_network'
 
-# background-color: steelblue;
+# Codes used to indicate alert types.
+C_COMPONENT = 'C'
+C_ERROR = 'E'
+C_FILE = 'F'
+
+LAST_ALERT_PATH = '/tmp/process_and_email.last'
+
 
 # GLOBAL VARIABLES
 # (may get overridden by OptionParser).
 #
 $check_failed = false
+$alert_codes = ''
 $email_errors = 0
 $email_files = 0
 $graph_increment = 100
@@ -92,6 +99,34 @@ class Array
     self.map { |c| "<#{tag}>#{c}</#{tag}>" }.join
   end
 end
+
+#
+#  read_last_alert
+#
+
+def read_last_alert()
+
+   f = File.open(LAST_ALERT_PATH,'r');
+   code = f.read;
+   f.close
+
+end
+
+#
+#  save_last_alert
+#
+
+def save_last_alert(code)
+
+   begin
+      f = File.open(LAST_ALERT_PATH,'w');
+      f.write(code);
+   rescue IOError => e
+      puts 'Could not write last alert info'
+   ensure
+   f.close
+end
+
 
 #
 #  g r a p h _ a r r a y _ a s c i i
@@ -277,15 +312,16 @@ if true
    # Send email b/c component(s)s are not online?
 
    # Are the required components running?
-   if !$check_failed && (comp_list != nil)
+   if comp_list != nil
       comp_list.sort!
       if (running_components & comp_list) != comp_list
-         $check_failed = true
+         $alert_codes += C_COMPONENT
          facts[F_COMPONENTS] = '<b>' + facts [F_COMPONENTS] + '</b>'
       end
    end
 
    # Send b/c enough errors occured?
+
    if error_list.class == String
       error_count = 1
    elsif error_list.class == Array
@@ -296,14 +332,16 @@ if true
 
    # Too many errors found in Event log?
    if (($email_errors > 0) && (error_count >= $email_errors))
-      $check_failed = true
+      $alert_codes += C_ERROR
       facts[F_ERRORS] = '<b>' + facts [F_ERRORS] + '</b>'
    end
 
    # Send b/c too few files are online?
-   $check_failed = $check_failed || ($email_files != 0) && (file_count.to_f < $email_files)
+   if ($email_files != 0) && (file_count.to_f < $email_files)
+      $alert_codes += C_FILE
+   end
 
-   if send_flag | $check_failed
+   if send_flag || ($alert_codes != '' && $alert_codes !=  
        #send_email (YAML.dump(facts))
        send_email (facts)
    end

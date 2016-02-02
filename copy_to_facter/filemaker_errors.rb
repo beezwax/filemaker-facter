@@ -24,7 +24,7 @@ require "facter/filemaker/filemaker_utils"
 Facter.add('filemaker_errors') do
 
      # From right now, how far back in time should we go?
-     oldest_error = Time.at (Time.now - MAX_SECONDS)
+     oldest_error = Time.at(Time.now - MAX_SECONDS)
 
      # First read in a portion of the log data up to our maximum log lines.
      raw_lines = tail(LOG_EVENTS,EVENTS_TO_CHECK)
@@ -40,7 +40,7 @@ Facter.add('filemaker_errors') do
         # from start of first line in match instead of looping over all.
         error_lines.each do |line|
            # Line's time stamp within range?
-           line_time = Time.parse (line[0..15])
+           line_time = Time.parse(line[0..15])
            is_period = line_time > oldest_error
      
            if is_period

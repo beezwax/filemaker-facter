@@ -46,8 +46,8 @@ INCR = 200
 
 # email settings
 
-# OS X is oddly inconsistent about whether we get just the host name, or the FQD (fully qualified domain).
-# You may want to specify this with a literal value instead.
+# Ruby on OS X is inconsistent about whether we get just the host name, or the FQD (fully qualified domain).
+# Because of this you may want to specify this with a literal value instead to avoid doubling up the domain.
 HOSTNAME = Socket.gethostname
 
 E_DOMAIN = "some.domain"

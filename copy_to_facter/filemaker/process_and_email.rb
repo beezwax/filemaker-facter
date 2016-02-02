@@ -23,6 +23,7 @@
 # 2015-04-16 simon_b: graphs now take optional step incremement parameter
 # 2016-01-07 simon_b: changed the doctype to use the commonly used xHTML strict form
 # 2016-01-07 simon_b: now flagging errors & component issues out of range
+# 2016-02-01 simon_b: fixes for two incorrect code blocks
 # 
 # TODO
 #
@@ -45,11 +46,11 @@ INCR = 200
 
 # email settings
 
+# OS X is oddly inconsistent about whether we get just the host name, or the FQD (fully qualified domain).
+# You may want to specify this with a literal value instead.
 HOSTNAME = Socket.gethostname
 
-# TODO: Use a YAML file for this?
-#
-E_DOMAIN = "beezwax.net"
+E_DOMAIN = "some.domain"
 E_FROM = HOSTNAME + "@" + E_DOMAIN
 E_TOS = ["noone@somedomain.com"]
 E_SUBJECT_REPORT = "Facter Report: " + HOSTNAME + "." + E_DOMAIN
@@ -123,7 +124,7 @@ def save_last_alert(code)
       f.write(code);
    rescue IOError => e
       puts 'Could not write last alert info'
-   ensure
+   end
    f.close
 end
 
@@ -341,9 +342,8 @@ if true
       $alert_codes += C_FILE
    end
 
-   if send_flag || ($alert_codes != '' && $alert_codes !=  
-       #send_email (YAML.dump(facts))
-       send_email (facts)
+   if send_flag || ($alert_codes != '')
+      send_email (facts)
    end
 end
 

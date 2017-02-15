@@ -9,6 +9,7 @@ Currently working facts are:
 
 | Fact Name               | Description |
 |-------------------------|-------------|
+| diskfree                | lists volumes, space used (GB), space free (GB), and used space (percentage) |
 | filemaker_components    | FileMaker server components currently running |
 | filemaker_errors        | recent errors in the Events.log (if any) |
 | filemaker_file_count    | number of open database files on server |
@@ -16,7 +17,7 @@ Currently working facts are:
 | filemaker_stats_network | network bytes for week, broken out by 24-hour period |
 | filemaker_version       | version of FileMaker Server |
 
-At this time (April 2015) scripts are tested with Facter version 2.4.3
+At this time (Jan 2017) scripts are tested with Facter version 2.4.6
 
 ## Installation & Configuration
 

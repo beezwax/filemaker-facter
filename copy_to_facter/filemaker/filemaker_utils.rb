@@ -8,6 +8,7 @@
 #   2015-04-13 simon_b: added method to check if string is numeric
 #   2015-11-25 simon_b: modified fmsadmin path after change to FMS 14.0v4
 #   2016-01-05 simon_b: added configuration constants
+#   2017-02-08 simon_b: added entab function
 #
 
 #
@@ -84,6 +85,12 @@ class String
          false
       end
    end
+
+  # Replace runs of spaces in a string.
+  def replace_spaces(replaceStr="\t")
+    self.gsub(/\s+/, replaceStr)
+  end
+
 end
 
 #

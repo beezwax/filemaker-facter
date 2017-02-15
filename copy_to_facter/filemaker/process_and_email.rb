@@ -24,6 +24,8 @@
 # 2016-01-07 simon_b: changed the doctype to use the commonly used xHTML strict form
 # 2016-01-07 simon_b: now flagging errors & component issues out of range
 # 2016-02-01 simon_b: fixes for two incorrect code blocks
+# 2016-03-08 simon_b: now specify helo for SMTP connection
+
 # 
 # TODO
 #
@@ -51,10 +53,11 @@ INCR = 200
 HOSTNAME = Socket.gethostname
 
 E_DOMAIN = "some.domain"
+E_FQD = HOSTNAME + "." + E_DOMAIN
 E_FROM = HOSTNAME + "@" + E_DOMAIN
 E_TOS = ["noone@somedomain.com"]
-E_SUBJECT_REPORT = "Facter Report: " + HOSTNAME + "." + E_DOMAIN
-E_SUBJECT_ALERT = "Facter Alert: " + HOSTNAME + "." + E_DOMAIN
+E_SUBJECT_REPORT = "Facter Report: " + E_FQD
+E_SUBJECT_ALERT = "Facter Alert: " + E_FQD
 #E_SMTP = "smtp.somedomain.com"
 E_SMTP = "localhost"
 E_PORT = 25
@@ -197,7 +200,7 @@ body_html = "<table border=1>
 
    end
 
-   Net::SMTP.start(E_SMTP, E_PORT) do |smtp|
+   Net::SMTP.start(E_SMTP, E_PORT, E_FQD) do |smtp|
       smtp.open_message_stream(E_FROM,E_TOS) do |f|
          f.puts 'From: ' + E_FROM
          f.puts 'To: ' + E_TOS.join(',')

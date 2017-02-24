@@ -71,6 +71,7 @@ E_GRAPH_END = '</div>'
 F_COMPONENTS = 'filemaker_components'
 F_ERRORS = 'filemaker_errors'
 F_STATS_DISK = 'filemaker_stats_disk'
+F_STATS_ELAPSED = 'filemaker_stats_elapsed'
 F_STATS_NETWORK = 'filemaker_stats_network'
 
 # Codes used to indicate alert types.
@@ -169,6 +170,26 @@ def graph_array_div (stat_rows,increment=10)
 
    for row in 0..(stat_rows.count - 1)
       # Clobber the existing array and replace with a string of HTML.
+      glob += stat_rows[row][0][0..15] + '<br> ' + E_GRAPH_START + (E_BAR % [stat_rows[row][1] / increment, stat_rows[row][1]]) + " " + E_GRAPH_END
+   end
+
+   return glob
+end
+
+#
+#  g r a p h _ a r r a y _ p a i r _ d i v
+#
+
+# Has two data points per time period.
+# increment: amount to divide value by (eg, changes how much is required for each step in graph)
+# stat_rows: an array of one or more rows of values to be graphed
+
+def graph_array_pair_div (stat_rows,increment=10)
+
+   glob = ""
+
+   for row in 0..(stat_rows.count - 1)
+      # Clobber the existing array and replace with a string of HTML.
       glob += stat_rows[row][0][0..15] + '<br> ' + E_GRAPH_START + (E_BAR % [stat_rows[row][1] / increment, stat_rows[row][1]]) + " " + (E_BAR % [stat_rows[row][2] / increment, stat_rows[row][2]]) + E_GRAPH_END
    end
 
@@ -179,7 +200,7 @@ end
 #  p r o c e s s _ c o m p o n e n t s
 #
 
-def process_components (facts, comp_list)
+def process_components(facts, comp_list)
 
    running_components = facts[F_COMPONENTS]
 
@@ -212,7 +233,7 @@ end
 #  s e n d _ e m a i l
 #
 
-def send_email (body)
+def send_email(body)
 
    # Since we are using HTML formatting, convert line endings to BRs.
    if $graph_increment == 0
@@ -325,7 +346,7 @@ if true
    # COMPONENTS
 
    # Check for component issues.
-   process_components (facts, comp_list)
+   process_components(facts, comp_list)
 
 
    # RECENT ERRORS
@@ -358,8 +379,9 @@ if true
 
    if $graph_increment > 0
       # Have switch to use ASCII graphs instead?
-      facts[F_STATS_DISK] = graph_array_div(facts [F_STATS_DISK], $graph_increment)
-      facts[F_STATS_NETWORK] = graph_array_div(facts [F_STATS_NETWORK], $graph_increment)
+      facts[F_STATS_DISK] = graph_array_pair_div(facts [F_STATS_DISK], $graph_increment)
+      facts[F_STATS_ELAPSED] = graph_array_div(facts [F_STATS_ELAPSED], $graph_increment)
+      facts[F_STATS_NETWORK] = graph_array_pair_div(facts [F_STATS_NETWORK], $graph_increment)
    end
 
 

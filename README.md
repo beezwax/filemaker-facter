@@ -14,10 +14,11 @@ Currently working facts are:
 | filemaker_errors        | recent errors in the Events.log (if any) |
 | filemaker_file_count    | number of open database files on server |
 | filemaker_stats_disk    | disk usage for week, broken down by 24-hour period |
+| filemaker_stats_elapsed    | sum of elapsed time for week, broken down by 24-hour period |
 | filemaker_stats_network | network bytes for week, broken out by 24-hour period |
 | filemaker_version       | version of FileMaker Server |
 
-At this time (Jan 2017) scripts are tested with Facter version 2.4.6
+At this time (Feb 2017) scripts are tested with Facter version 2.4.6
 
 ## Installation & Configuration
 
@@ -95,8 +96,6 @@ This script is still a work in progress, so See the script for current informati
 * process_and_email
   - handle incorrectly formatted or missing data better
   - specify email related parameters from command line or file
-* return recent wait times
-* check for high wait times
 * return count of recent WebDirect clients
 * return count of recent FMP clients
 

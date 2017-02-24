@@ -25,6 +25,7 @@
 # 2016-01-07 simon_b: now flagging errors & component issues out of range
 # 2016-02-01 simon_b: fixes for two incorrect code blocks
 # 2016-03-08 simon_b: now specify helo for SMTP connection
+# 2017-02-22 simon_b: added --debug option
 
 # 
 # TODO
@@ -34,7 +35,7 @@
 #  factor out main code block into functions
 #  accept To: addresses as command options
 
- 
+
 require 'net/smtp'
 require 'optparse'
 require 'socket'
@@ -42,6 +43,7 @@ require 'yaml'
 
 # GLOBAL CONSTANTS
 #
+
 # ASCII graph: value per step of bar graph.
 # HTML graphs default to value in $graph_increment
 INCR = 200
@@ -82,15 +84,19 @@ LAST_ALERT_PATH = '/tmp/process_and_email.last'
 # GLOBAL VARIABLES
 # (may get overridden by OptionParser).
 #
-$check_failed = false
 $alert_codes = ''
+$always_email = false
+$check_failed = false
+$debug = false
 $email_errors = 0
 $email_files = 0
 $graph_increment = 100
 
+# These may be filled in if their respective command line options are used.
 comp_list = []
 email_list = []
 error_list = []
+
 raw = ""
 send_flag = false
 
@@ -169,6 +175,38 @@ def graph_array_div (stat_rows,increment=10)
    return glob
 end
 
+#
+#  p r o c e s s _ c o m p o n e n t s
+#
+
+def process_components (facts, comp_list)
+
+   running_components = facts[F_COMPONENTS]
+
+   # Need to sort list as intersection function is picky about the order values are specified in.
+   if running_components != nil
+      running_components.sort!
+   end
+
+   if $debug
+      p "running_components: %s" % running_components.to_s
+   end
+
+   # Send email b/c component(s)s are not online?
+
+   # Are the required components running?
+   if comp_list != nil
+      comp_list.sort!
+      if (running_components & comp_list) != comp_list
+         $alert_codes += C_COMPONENT
+         # Embolden b/c we found an issue.
+         facts[F_COMPONENTS] = '<b>' + facts [F_COMPONENTS] + '</b>'
+      end
+   end
+
+end
+
+
 
 #
 #  s e n d _ e m a i l
@@ -245,8 +283,16 @@ OptionParser.new do |opts|
 
    opts.banner = "Usage: process_for_email.rb [options]"
 
+   opts.on('-a','--always-email','Send email even if no errors') do |always_email|
+      $always_email = true
+   end
+ 
    opts.on('--components a,b,c,d,e,f,g', Array, 'Send email if listed components are not running') do |components|
       comp_list = components
+   end
+
+   opts.on('-d','--debug', 'Enable debug output') do |debug|
+      $debug = debug
    end
 
    opts.on('--errors [count]', Float, 'Send email if errors were logged') do |errors|
@@ -275,19 +321,37 @@ if true
    # Load up the facts so that we can check for issues.
    facts = YAML.load(raw)
 
-   running_components = facts[F_COMPONENTS]
 
-   # Need to sort list as intersection function is picky about the order values are specified in.
-   if running_components != nil
-      running_components.sort!
-   end
+   # COMPONENTS
+
+   # Check for component issues.
+   process_components (facts, comp_list)
+
+
+   # RECENT ERRORS
   
    error_list = facts[F_ERRORS]
    if error_list != nil
       error_list = error_list.split("\n")
    end
 
+
+   # FILE COUNT
+
    file_count = facts['filemaker_file_count']
+
+   if $debug
+      p "file_count: %d" % file_count.to_f
+   end
+
+   # Send b/c too few files are online?
+   if ($email_files != 0) && (file_count.to_f < $email_files)
+      $alert_codes += C_FILE
+      file_count = '<b>' + file_count + '</b>'
+   end
+
+
+   # DISK, NETWORK STATS
 
    # When using graphing, we replace the existing numeric values with a string
    # containing the numeric value and an ASCII graph.
@@ -298,30 +362,18 @@ if true
       facts[F_STATS_NETWORK] = graph_array_div(facts [F_STATS_NETWORK], $graph_increment)
    end
 
-   # Always send email when no checks are specified.
-   send_flag = send_flag || (($email_errors == 0) && ($email_files == 0) && (comp_list == []))
 
-   # Below only used for debugging.
-   if false
+   # Always send email when no checks are specified.
+   send_flag = send_flag || $always_email
+
+   # Extra output when debugging.
+   if $debug
       p "graph_increment: %d" % $graph_increment
       p "send_flag: %s" % send_flag
       p "error_list: %s" % error_list
       p "email_errors: %d" % $email_errors
       p "email_files: %d" % $email_files
-      p "file_count: %d" % file_count.to_f
       p "comp_list: %s" % comp_list.to_s
-      p "running_components: %s" % running_components.to_s
-   end
-
-   # Send email b/c component(s)s are not online?
-
-   # Are the required components running?
-   if comp_list != nil
-      comp_list.sort!
-      if (running_components & comp_list) != comp_list
-         $alert_codes += C_COMPONENT
-         facts[F_COMPONENTS] = '<b>' + facts [F_COMPONENTS] + '</b>'
-      end
    end
 
    # Send b/c enough errors occured?
@@ -338,11 +390,6 @@ if true
    if (($email_errors > 0) && (error_count >= $email_errors))
       $alert_codes += C_ERROR
       facts[F_ERRORS] = '<b>' + facts [F_ERRORS] + '</b>'
-   end
-
-   # Send b/c too few files are online?
-   if ($email_files != 0) && (file_count.to_f < $email_files)
-      $alert_codes += C_FILE
    end
 
    if send_flag || ($alert_codes != '')

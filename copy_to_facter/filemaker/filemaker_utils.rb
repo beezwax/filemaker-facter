@@ -17,7 +17,7 @@
 
 # Change these if too few/too many errors getting reported.
 # However, changing MAX_SECONDS may be the better choice.
-EVENTS_TO_CHECK = 200
+EVENTS_TO_CHECK = 120
 
 # How far to go back in logs (time based). 
 MAX_SECONDS = 2*60*60  # 720 seconds, or 2 hours
@@ -144,6 +144,28 @@ def tail(path, n)
   return file.read
 end
 
+
+#
+#	c o l u m n _ n a m e s _ f o r _ l o g
+#
+
+def column_names_for_log (path)
+
+   begin
+      file = File.open(path, "r")
+      # The column names are typically on the first line of log file.
+      lines = file.readlines(path,512)
+   rescue
+      columns = []
+   else
+      # Chop first line at tabbed columns.
+      columns = lines[0].split("\t")
+   end
+
+   return columns
+end
+
+
 #
 #	l a s t _ l i n e _ o f _ l o g
 #
@@ -162,3 +184,4 @@ def last_line_of_log(path)
   
   return last_line
 end
+

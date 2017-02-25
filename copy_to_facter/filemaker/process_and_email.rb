@@ -27,6 +27,7 @@
 # 2016-03-08 simon_b: now specify helo for SMTP connection
 # 2017-02-22 simon_b: added --debug option
 # 2017-02-24 simon_b: empty file count no longer causes exception
+# 2017-02-24 simon_b: uptime check added
 
 # 
 # TODO
@@ -74,25 +75,28 @@ F_ERRORS = 'filemaker_errors'
 F_STATS_DISK = 'filemaker_stats_disk'
 F_STATS_ELAPSED = 'filemaker_stats_elapsed'
 F_STATS_NETWORK = 'filemaker_stats_network'
+F_UPTIME = 'sp_uptime'
 
 # Codes used to indicate alert types.
 C_COMPONENT = 'C'
 C_ERROR = 'E'
 C_FILE = 'F'
+C_UPTIME = 'U'
 
 LAST_ALERT_PATH = '/tmp/process_and_email.last'
 
 
 # GLOBAL VARIABLES
-# (may get overridden by OptionParser).
+# (some of these may get overridden by OptionParser).
 #
 $alert_codes = ''
 $always_email = false
 $check_failed = false
-$debug = false
+$debug = true
 $email_errors = 0
 $email_files = 0
 $graph_increment = 100
+$uptime_minimum = 60 # minutes
 
 # These may be filled in if their respective command line options are used.
 comp_list = []
@@ -224,7 +228,7 @@ def process_components(facts, comp_list)
       if (running_components & comp_list) != comp_list
          $alert_codes += C_COMPONENT
          # Embolden b/c we found an issue.
-         facts[F_COMPONENTS] = '<b>' + running_components.join (",") + '</b>'
+         facts[F_COMPONENTS] = '<b>' + running_components.join(",") + '</b>'
       end
    end
 
@@ -392,6 +396,31 @@ if true
       facts[F_STATS_NETWORK] = graph_array_pair_div(facts [F_STATS_NETWORK], $graph_increment)
    end
 
+   if $debug
+      p "F_STATS_DISK: %s" % facts[F_STATS_DISK]
+      p "F_STATS_ELAPSED: %s" % facts[F_STATS_ELAPSED]
+      p "F_STATS_NETWORK: %s" % facts[F_STATS_NETWORK]
+   end
+
+
+   # UPTIME
+
+   # format is in the form of "up 0:0:10:25" (0 days, 0 hours, 10 minutes, 25 seconds)   
+
+   uptime_array = facts[F_UPTIME].split(":")
+   #p "uptime_array: %s" % uptime_array
+
+   # Convert into number of minutes up.
+   uptime_minutes = uptime_array[0].to_f * 1440 + uptime_array[1].to_f * 60 + uptime_array[2].to_f
+
+   # Unexpected reboot?
+   if uptime_minutes < $uptime_minimum
+      $alert_codes += C_UPTIME
+      facts[F_UPTIME] = '<b>%s</b>' % facts[F_UPTIME]
+   end
+
+
+   # SENDING EMAIL?
 
    # Always send email when no checks are specified.
    send_flag = send_flag || $always_email

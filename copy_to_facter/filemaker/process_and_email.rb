@@ -26,6 +26,7 @@
 # 2016-02-01 simon_b: fixes for two incorrect code blocks
 # 2016-03-08 simon_b: now specify helo for SMTP connection
 # 2017-02-22 simon_b: added --debug option
+# 2017-02-24 simon_b: empty file count no longer causes exception
 
 # 
 # TODO
@@ -168,9 +169,11 @@ def graph_array_div (stat_rows,increment=10)
 
    glob = ""
 
-   for row in 0..(stat_rows.count - 1)
-      # Clobber the existing array and replace with a string of HTML.
-      glob += stat_rows[row][0][0..15] + '<br> ' + E_GRAPH_START + (E_BAR % [stat_rows[row][1] / increment, stat_rows[row][1]]) + " " + E_GRAPH_END
+   if stat_rows.kind_of? Array
+      for row in 0..(stat_rows.count - 1)
+         # Clobber the existing array and replace with a string of HTML.
+         glob += stat_rows[row][0][0..15] + '<br> ' + E_GRAPH_START + (E_BAR % [stat_rows[row][1] / increment, stat_rows[row][1]]) + " " + E_GRAPH_END
+      end
    end
 
    return glob
@@ -221,7 +224,7 @@ def process_components(facts, comp_list)
       if (running_components & comp_list) != comp_list
          $alert_codes += C_COMPONENT
          # Embolden b/c we found an issue.
-         facts[F_COMPONENTS] = '<b>' + facts [F_COMPONENTS] + '</b>'
+         facts[F_COMPONENTS] = '<b>' + running_components.join (",") + '</b>'
       end
    end
 
@@ -360,15 +363,20 @@ if true
    # FILE COUNT
 
    file_count = facts['filemaker_file_count']
+   if file_count != nil
+      file_count = file_count.to_f
+   else
+      file_count = 0
+   end
 
    if $debug
-      p "file_count: %d" % file_count.to_f
+      p "file_count: %d" % file_count
    end
 
    # Send b/c too few files are online?
-   if ($email_files != 0) && (file_count.to_f < $email_files)
+   if ($email_files != 0) && (file_count < $email_files)
       $alert_codes += C_FILE
-      file_count = '<b>' + file_count + '</b>'
+      facts['filemaker_file_count'] = '<b>%d</b>' % file_count
    end
 
 
@@ -413,6 +421,10 @@ if true
       $alert_codes += C_ERROR
       facts[F_ERRORS] = '<b>' + facts [F_ERRORS] + '</b>'
    end
+
+   # TO-DO: This should check if we previously alerted for same error(s).
+
+   $check_failed = $alert_codes > ''
 
    if send_flag || ($alert_codes != '')
       send_email (facts)

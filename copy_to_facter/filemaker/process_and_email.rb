@@ -412,7 +412,9 @@ if true
    # Send b/c over maximum?
    if elapsed_ms > $elapsed_maximum
       $alert_codes += C_ELAPSED
-      facts[F_STATS_ELAPSED] = '<b>%d</b>' % elapsed_ms
+      # Can't use the method below b/c we use graph_array_div to draw the array.
+      # Will need to either highlight the name instead, or modify graph_array_div to accept a embolden flag.
+      #    facts[F_STATS_ELAPSED] = '<b>%d</b>' % elapsed_ms
    end
 
    if $debug
@@ -514,4 +516,3 @@ if true
       send_email (facts)
    end
 end
-

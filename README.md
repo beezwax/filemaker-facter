@@ -47,7 +47,9 @@ Here, we assume email (typically Postfix SMTP) is configured on the local system
 
 ```
 #min    hour    dom    mon    dow    command
-0       8,12,6  *      *      *      /usr/bin/facter macosx_productversion memoryfree sp_uptime filemaker_errors filemaker_stats_disk filemaker_version | /usr/bin/mail -s "facter report: `/bin/hostname`" simon@beezwax.nodomain
+#
+# Send report every day at midnight.
+0       0       *      *      *      /usr/bin/facter macosx_productversion diskfree memoryfree sp_uptime filemaker_errors filemaker_stats_disk filemaker_version | /usr/bin/mail -s "facter report: `/bin/hostname`" simon@beezwax.yourdomain
 ```
 
 ##process_and_email.rb
@@ -74,15 +76,17 @@ The process_and_email command accepts four parameters used to set how results ar
 
 * **--components name[,...]** If the named components are not running email is sent
   - component names are: ADMINSERVER, FMSIB, SERVER, WPE, XDBC, fmserver_helperd, httpd, fmslogtrimmer
+* **--elapsed microseconds** Send  email if at elapsed wait time over **microseconds**
 * **--errors count** Send  email if at least **count** recent errors
 * **--files count** Send email if less then **count** files are open
 * **--graph** Enable graphing of stats
+* **--uptime minutes** Send  email if uptime is less then **minutes**
 
 **Usage Examples**
 
 Email selected facts, graphing the stats:
 ```
-/usr/bin/facter -y macosx_productversion memoryfree sp_uptime filemaker_version filemaker_components filemaker_errors filemaker_file_count filemaker_stats_disk filemaker_stats_network | /Library/Ruby/Site/facter/filemaker/process_and_email.rb --graph
+/usr/bin/facter -y macosx_productversion diskfree memoryfree sp_uptime filemaker_version filemaker_components filemaker_errors filemaker_file_count filemaker_stats_disk filemaker_stats_network | /Library/Ruby/Site/facter/filemaker/process_and_email.rb -a --graph
 ```
 
 Email if the specified components are not running, fewer then 20 files are online, or more then 5 errors in log:

@@ -72,6 +72,7 @@ E_GRAPH_END = '</div>'
 
 F_COMPONENTS = 'filemaker_components'
 F_ERRORS = 'filemaker_errors'
+F_FILE_COUNT = 'filemaker_file_count'
 F_STATS_DISK = 'filemaker_stats_disk'
 F_STATS_ELAPSED = 'filemaker_stats_elapsed'
 F_STATS_NETWORK = 'filemaker_stats_network'
@@ -79,6 +80,7 @@ F_UPTIME = 'sp_uptime'
 
 # Codes used to indicate alert types.
 C_COMPONENT = 'C'
+C_ELAPSED = 'e'
 C_ERROR = 'E'
 C_FILE = 'F'
 C_UPTIME = 'U'
@@ -93,10 +95,11 @@ $alert_codes = ''
 $always_email = false
 $check_failed = false
 $debug = true
-$email_errors = 0
-$email_files = 0
+$elapsed_maximum = 0
+$errors_maximum = 0
+$files_minimum = 0
 $graph_increment = 100
-$uptime_minimum = 60 # minutes
+$uptime_minimum = 0 # minutes
 
 # These may be filled in if their respective command line options are used.
 comp_list = []
@@ -127,6 +130,7 @@ def read_last_alert()
    f.close
 
 end
+
 
 #
 #  save_last_alert
@@ -162,6 +166,7 @@ def graph_array_ascii(stat_rows)
    return stat_row
 end
 
+
 #
 #  g r a p h _ a r r a y _ d i v
 #
@@ -183,6 +188,7 @@ def graph_array_div (stat_rows,increment=10)
    return glob
 end
 
+
 #
 #  g r a p h _ a r r a y _ p a i r _ d i v
 #
@@ -202,6 +208,7 @@ def graph_array_pair_div (stat_rows,increment=10)
 
    return glob
 end
+
 
 #
 #  p r o c e s s _ c o m p o n e n t s
@@ -233,7 +240,6 @@ def process_components(facts, comp_list)
    end
 
 end
-
 
 
 #
@@ -323,19 +329,41 @@ OptionParser.new do |opts|
       $debug = debug
    end
 
-   opts.on('--errors [count]', Float, 'Send email if errors were logged') do |errors|
-      if errors != nil && errors > 0
-         $email_errors = errors
+   opts.on('--elapsed [microseconds]', Float, 'Send email if errors were logged') do |microseconds|
+      if microseconds != nil && microseconds > 0
+         $elapsed_maximum = microseconds
+      else
+         $elapsed_maximum = 10000
       end
    end
 
-   opts.on('--files [count]', Float, 'Send email if there is not at least 1 or count files open') do |files|
-      $email_files = files
+   opts.on('--errors [count]', Float, 'Send email if errors were logged') do |errors|
+      if errors != nil && errors > 0
+         $errors_maximum = errors
+      else
+         $errors_maximum = 1
+      end
+   end
+
+   opts.on('--files [count]', Float, 'Send email if there is not at least 1 or [count] files open') do |files|
+      if files != nil && files > 0
+         $files_minimum = files
+      else
+         $files_minimum = 1
+      end
    end
 
    opts.on('--graph [increment]', Float, 'Add ASCII graph to stats') do |graph|
       if graph != nil && graph > 0
          $graph_increment = graph
+      end
+   end
+
+   opts.on('--uptime [minutes]', Float, 'Send email if uptime is below 60 minutes or optional limit') do |minutes|
+      if minutes != nil && minutes > 0
+         $uptime_minimum = minutes
+      else
+         $uptime_minimum = 60
       end
    end
 
@@ -363,6 +391,34 @@ if true
       error_list = error_list.split("\n")
    end
 
+   if $debug
+      if error_list != nil
+         p "error_list: %s" % error_list.join(",")
+      else
+         p "error_list:"
+      end
+   end
+
+
+   # ELAPSED TIME
+
+   elapsed_ms = facts[F_STATS_ELAPSED]
+   if elapsed_ms != nil
+      elapsed_ms = elapsed_ms.last[1].to_f
+   else
+      elapsed_ms = 0
+   end
+
+   # Send b/c over maximum?
+   if elapsed_ms > $elapsed_maximum
+      $alert_codes += C_ELAPSED
+      facts[F_STATS_ELAPSED] = '<b>%d</b>' % elapsed_ms
+   end
+
+   if $debug
+      p "elapsed_ms: %d" % elapsed_ms
+   end
+
 
    # FILE COUNT
 
@@ -378,13 +434,13 @@ if true
    end
 
    # Send b/c too few files are online?
-   if ($email_files != 0) && (file_count < $email_files)
+   if ($files_minimum != 0) && (file_count < $files_minimum)
       $alert_codes += C_FILE
-      facts['filemaker_file_count'] = '<b>%d</b>' % file_count
+      facts[F_FILE_COUNT] = '<b>%d</b>' % file_count
    end
 
 
-   # DISK, NETWORK STATS
+   # DISK, ELAPSED, NETWORK STATS
 
    # When using graphing, we replace the existing numeric values with a string
    # containing the numeric value and an ASCII graph.
@@ -427,12 +483,11 @@ if true
 
    # Extra output when debugging.
    if $debug
+      p "comp_list: %s" % comp_list.to_s
+      p "errors_maximum: %d" % $errors_maximum
+      p "files_minimum: %d" % $files_minimum
       p "graph_increment: %d" % $graph_increment
       p "send_flag: %s" % send_flag
-      p "error_list: %s" % error_list
-      p "email_errors: %d" % $email_errors
-      p "email_files: %d" % $email_files
-      p "comp_list: %s" % comp_list.to_s
    end
 
    # Send b/c enough errors occured?
@@ -446,7 +501,7 @@ if true
    end
 
    # Too many errors found in Event log?
-   if (($email_errors > 0) && (error_count >= $email_errors))
+   if (($errors_maximum > 0) && (error_count >= $errors_maximum))
       $alert_codes += C_ERROR
       facts[F_ERRORS] = '<b>' + facts [F_ERRORS] + '</b>'
    end

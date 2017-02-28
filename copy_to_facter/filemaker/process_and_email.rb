@@ -28,6 +28,7 @@
 # 2017-02-22 simon_b: added --debug option
 # 2017-02-24 simon_b: empty file count no longer causes exception
 # 2017-02-24 simon_b: uptime check added
+# 2017-02-24 simon_b: factored check for error messages
 
 # 
 # TODO
@@ -46,25 +47,36 @@ require 'yaml'
 # GLOBAL CONSTANTS
 #
 
+# email settings
+
+# =================================================
+#
+#   MOST OF THESE WILL NEED TO BE EDITED
+
+E_DOMAIN = "some.domain"
+E_TOS = ["noone@somedomain.com"]
+E_SMTP = "localhost"
+E_PORT = 25
+
+#
+# =================================================
+
 # ASCII graph: value per step of bar graph.
 # HTML graphs default to value in $graph_increment
 INCR = 200
 
-# email settings
+if RUBY_PLATFORM.include? "darwin"
+   # Ruby on macOS is inconsistent about whether we get just the host name.
+   # "universal.x86_64-darwin13"
+   HOSTNAME = Socket.gethostname.split(".")[0]
+else
+   HOSTNAME = Socket.gethostname
+end
 
-# Ruby on OS X is inconsistent about whether we get just the host name, or the FQD (fully qualified domain).
-# Because of this you may want to specify this with a literal value instead to avoid doubling up the domain.
-HOSTNAME = Socket.gethostname
-
-E_DOMAIN = "some.domain"
 E_FQD = HOSTNAME + "." + E_DOMAIN
 E_FROM = HOSTNAME + "@" + E_DOMAIN
-E_TOS = ["noone@somedomain.com"]
 E_SUBJECT_REPORT = "Facter Report: " + E_FQD
 E_SUBJECT_ALERT = "Facter Alert: " + E_FQD
-#E_SMTP = "smtp.somedomain.com"
-E_SMTP = "localhost"
-E_PORT = 25
 
 E_BAR = '<div style="width: %dpx;">%d</div>'
 E_GRAPH_START = '<div class="chart">'
@@ -119,24 +131,12 @@ class Array
   end
 end
 
-#
-#  read_last_alert
-#
-
-def read_last_alert()
-
-   f = File.open(LAST_ALERT_PATH,'r');
-   code = f.read;
-   f.close
-
-end
-
 
 #
-#  save_last_alert
+#  save_last_alerts
 #
 
-def save_last_alert(code)
+def write_last_alerts(code)
 
    begin
       f = File.open(LAST_ALERT_PATH,'w');
@@ -145,6 +145,26 @@ def save_last_alert(code)
       puts 'Could not write last alert info'
    end
    f.close
+end
+
+
+#
+#  read_last_alert
+#
+
+def read_last_alert()
+
+   begin
+      f = File.open(LAST_ALERT_PATH,'r');
+      code = f.read;
+      f.close
+   rescue Errno::ENOENT => e
+      # Hopefully here just b/c the file did not exist yet.
+      write_last_alerts("")
+      code = ""
+   end
+
+   return code
 end
 
 
@@ -241,6 +261,44 @@ def process_components(facts, comp_list)
 
 end
 
+#
+#  p r o c e s s _ e r r o r s
+#
+
+def process_errors(facts)
+
+   error_list = facts[F_ERRORS]
+
+   if error_list != nil
+      if error_list.class == String
+         error_list = error_list.split("\n")
+         error_count = 1
+      elsif error_list.class == Array
+         error_count = error_list.count
+      else
+         error_count = 0
+      end
+
+      # Too many errors found in Event log?
+      if (($errors_maximum > 0) && (error_count >= $errors_maximum))
+         $alert_codes += C_ERROR
+         facts[F_ERRORS] = '<b>' + facts [F_ERRORS] + '</b>'
+      end
+   end
+
+   if $debug
+      p "error_count: %d" % error_count
+      p "errors_maximum: %d" % $errors_maximum
+      if error_list != nil
+         p "error_list: %s" % error_list.join(",")
+      else
+         p "error_list:"
+      end
+   end
+
+   return error_list
+end
+
 
 #
 #  s e n d _ e m a i l
@@ -313,6 +371,10 @@ body_html = "<table border=1>
 end  # send_email
 
 
+#
+#	MAIN
+#
+
 OptionParser.new do |opts|
 
    opts.banner = "Usage: process_for_email.rb [options]"
@@ -384,20 +446,10 @@ if true
    process_components(facts, comp_list)
 
 
-   # RECENT ERRORS
-  
-   error_list = facts[F_ERRORS]
-   if error_list != nil
-      error_list = error_list.split("\n")
-   end
+   # ERRORS
 
-   if $debug
-      if error_list != nil
-         p "error_list: %s" % error_list.join(",")
-      else
-         p "error_list:"
-      end
-   end
+   # Check for recent error messages.
+   error_list = process_errors(facts)
 
 
    # ELAPSED TIME
@@ -477,42 +529,29 @@ if true
       facts[F_UPTIME] = '<b>%s</b>' % facts[F_UPTIME]
    end
 
+   # Get error codes from previous run, and then overwrite with the ones we have now.
+   last_alerts = read_last_alert()
+   write_last_alerts ($alert_codes)
+   
+   # Get the union of the current error codes and the previous ones.
+   code_overlap = last_alerts.chars.sort & $alert_codes.chars.sort
 
-   # SENDING EMAIL?
-
-   # Always send email when no checks are specified.
-   send_flag = send_flag || $always_email
+   # Must be something new b/c the union is smaller.
+   new_code_flag = code_overlap.count < $alert_codes.length
 
    # Extra output when debugging.
    if $debug
+      p "alert_codes: %s" % $alert_codes
       p "comp_list: %s" % comp_list.to_s
-      p "errors_maximum: %d" % $errors_maximum
       p "files_minimum: %d" % $files_minimum
       p "graph_increment: %d" % $graph_increment
+      p "new_code_flag: %s" % new_code_flag
       p "send_flag: %s" % send_flag
    end
 
-   # Send b/c enough errors occured?
+   # SENDING EMAIL?
 
-   if error_list.class == String
-      error_count = 1
-   elsif error_list.class == Array
-      error_count = error_list.count
-   else
-      error_count = 0
-   end
-
-   # Too many errors found in Event log?
-   if (($errors_maximum > 0) && (error_count >= $errors_maximum))
-      $alert_codes += C_ERROR
-      facts[F_ERRORS] = '<b>' + facts [F_ERRORS] + '</b>'
-   end
-
-   # TO-DO: This should check if we previously alerted for same error(s).
-
-   $check_failed = $alert_codes > ''
-
-   if send_flag || ($alert_codes != '')
+   if $always_email || new_code_flag
       send_email (facts)
    end
 end

@@ -537,7 +537,7 @@ if true
    code_overlap = last_alerts.chars.sort & $alert_codes.chars.sort
 
    # Must be something new b/c the union is smaller.
-   new_code_flag = code_overlap.count < $alert_codes.length
+   $check_failed = code_overlap.count < $alert_codes.length
 
    # Extra output when debugging.
    if $debug
@@ -551,7 +551,7 @@ if true
 
    # SENDING EMAIL?
 
-   if $always_email || new_code_flag
+   if $always_email || $check_failed
       send_email (facts)
    end
 end

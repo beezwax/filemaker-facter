@@ -10,9 +10,10 @@
 #
 # HISTORY
 #   2017-02-19 simon_b: Created filed
+#   2017-03-09 simon_b: now return time in seconds instead of milliseconds
 
-# cp filemaker/filemaker_utils.rb /Library/Ruby/Site/facter/filemaker/
-# cp filemaker_stats_elapsed.rb /Library/Ruby/Site/facter/ 
+# For testing:
+#    cp filemaker/filemaker_utils.rb /Library/Ruby/Site/facter/filemaker/; cp filemaker_stats_elapsed.rb /Library/Ruby/Site/facter/ 
 
 require 'etc'
 require "facter"
@@ -63,7 +64,8 @@ Facter.add('filemaker_stats_elapsed') do
               end
            end
 
-           sum_elapsed += Float(columns [elapsed_col])
+           # Extract milliseconds elapsed and convert to seconds.
+           sum_elapsed += Float(columns [elapsed_col]) / 1000
 
            # End of an interval we are summing up?
            if break_index >= break_interval

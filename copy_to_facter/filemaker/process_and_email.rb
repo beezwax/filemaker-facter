@@ -54,7 +54,7 @@ require 'yaml'
 #   MOST OF THESE WILL NEED TO BE EDITED
 
 E_DOMAIN = "some.domain"
-E_TOS = ["noone@somedomain.com"]
+E_TOS = ["first@somedomain.com","second@somedomain.com"]
 E_SMTP = "localhost"
 E_PORT = 25
 
@@ -271,6 +271,7 @@ def process_errors(facts)
 
    if error_list != nil
       if error_list.class == String
+         # Only one message, but want in array to be consistent.
          error_list = error_list.split("\n")
          error_count = 1
       elsif error_list.class == Array
@@ -282,7 +283,7 @@ def process_errors(facts)
       # Too many errors found in Event log?
       if (($errors_maximum > 0) && (error_count >= $errors_maximum))
          $alert_codes += C_ERROR
-         facts[F_ERRORS] = '<b>' + facts [F_ERRORS] + '</b>'
+         facts[F_ERRORS] = '<b>%s</b>' % error_list.join("\n")
       end
    end
 
@@ -391,11 +392,11 @@ OptionParser.new do |opts|
       $debug = debug
    end
 
-   opts.on('--elapsed [microseconds]', Float, 'Send email if errors were logged') do |microseconds|
-      if microseconds != nil && microseconds > 0
-         $elapsed_maximum = microseconds
+   opts.on('--elapsed [seconds]', Float, 'Send email if errors were logged') do |seconds|
+      if seconds != nil && seconds > 0
+         $elapsed_maximum = seconds
       else
-         $elapsed_maximum = 10000
+         $elapsed_maximum = 50 # default to 50 seconds
       end
    end
 
@@ -454,15 +455,16 @@ if true
 
    # ELAPSED TIME
 
-   elapsed_ms = facts[F_STATS_ELAPSED]
-   if elapsed_ms != nil
-      elapsed_ms = elapsed_ms.last[1].to_f
+   elapsed_recent = facts[F_STATS_ELAPSED]
+   if elapsed_recent != nil
+      # Get last elapsed row's elapsed seconds column (converted by fact to seconds from ms).
+      elapsed_seconds = elapsed_recent.last[1].to_f
    else
-      elapsed_ms = 0
+      elapsed_seconds = 0
    end
 
    # Send b/c over maximum?
-   if elapsed_ms > $elapsed_maximum
+   if elapsed_seconds > $elapsed_maximum
       $alert_codes += C_ELAPSED
       # Can't use the method below b/c we use graph_array_div to draw the array.
       # Will need to either highlight the name instead, or modify graph_array_div to accept a embolden flag.
@@ -470,7 +472,7 @@ if true
    end
 
    if $debug
-      p "elapsed_ms: %d" % elapsed_ms
+      p "elapsed_seconds: %d" % elapsed_seconds
    end
 
 
@@ -490,7 +492,7 @@ if true
    # Send b/c too few files are online?
    if ($files_minimum != 0) && (file_count < $files_minimum)
       $alert_codes += C_FILE
-      facts[F_FILE_COUNT] = '<b>%d</b>' % file_count
+      facts[F_FILE_COUNT] = '<b>%d &lt; %d</b>' % [file_count, $files_minimum]
    end
 
 
@@ -517,16 +519,19 @@ if true
 
    # format is in the form of "up 0:0:10:25" (0 days, 0 hours, 10 minutes, 25 seconds)   
 
-   uptime_array = facts[F_UPTIME].split(":")
-   #p "uptime_array: %s" % uptime_array
+   uptime_str = facts[F_UPTIME]
 
-   # Convert into number of minutes up.
-   uptime_minutes = uptime_array[0].to_f * 1440 + uptime_array[1].to_f * 60 + uptime_array[2].to_f
+   if uptime_str != nil
+      uptime_array = uptime_str[3..-1].split(":")
 
-   # Unexpected reboot?
-   if uptime_minutes < $uptime_minimum
-      $alert_codes += C_UPTIME
-      facts[F_UPTIME] = '<b>%s</b>' % facts[F_UPTIME]
+      # Convert into number of minutes up.
+      uptime_minutes = uptime_array[0].to_f * 1440 + uptime_array[1].to_f * 60 + uptime_array[2].to_f
+
+      # Unexpected reboot?
+      if uptime_minutes < $uptime_minimum
+         $alert_codes += C_UPTIME
+         facts[F_UPTIME] = '<b>%s &lt; %i minutes</b>' % [facts[F_UPTIME], $uptime_minimum]
+      end
    end
 
    # Get error codes from previous run, and then overwrite with the ones we have now.
@@ -545,8 +550,9 @@ if true
       p "comp_list: %s" % comp_list.to_s
       p "files_minimum: %d" % $files_minimum
       p "graph_increment: %d" % $graph_increment
-      p "new_code_flag: %s" % new_code_flag
+      p "check_failed: %s" % $check_failed
       p "send_flag: %s" % send_flag
+      p "uptime_array: %s" % uptime_array
    end
 
    # SENDING EMAIL?

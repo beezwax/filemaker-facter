@@ -268,16 +268,18 @@ end
 def process_errors(facts)
 
    error_list = facts[F_ERRORS]
+   error_count = 0
 
    if error_list != nil
-      if error_list.class == String
-         # Only one message, but want in array to be consistent.
+      if error_list.class == String && error_list != ""
+         # Only one message or null string, but make an array to be consistent.
          error_list = error_list.split("\n")
-         error_count = 1
+         if error_list != []
+            # We had a string w/ error in it.
+            error_count = 1
+         end
       elsif error_list.class == Array
          error_count = error_list.count
-      else
-         error_count = 0
       end
 
       # Too many errors found in Event log?

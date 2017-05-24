@@ -37,7 +37,7 @@
 #  --component list must now be in same order as Facter returns them
 #  factor out main code block into functions
 #  accept To: addresses as command options
-
+#  use hash keys instead of letter alert codes so that they the alert related rows can easily be found
 
 require 'net/smtp'
 require 'optparse'
@@ -309,7 +309,7 @@ end
 
 def send_email(body)
 
-   # Since we are using HTML formatting, convert line endings to BRs.
+   # Since we are using HTML formatting, add BRs to line endings.
    if $graph_increment == 0
       body_yaml =YAML.dump(body)
       body_html = body_yaml.gsub(/\n/, "<br>\n")
@@ -398,7 +398,7 @@ OptionParser.new do |opts|
       if seconds != nil && seconds > 0
          $elapsed_maximum = seconds
       else
-         $elapsed_maximum = 50 # default to 50 seconds
+         $elapsed_maximum = 2000 # default to 2000 seconds
       end
    end
 

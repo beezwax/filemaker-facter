@@ -76,7 +76,7 @@ The process_and_email command accepts four parameters used to set how results ar
 
 * **--components name[,...]** If the named components are not running email is sent
   - component names are: ADMINSERVER, FMSIB, SERVER, WPE, XDBC, fmserver_helperd, httpd, fmslogtrimmer
-* **--elapsed microseconds** Send  email if at elapsed wait time over **microseconds**
+* **--elapsed seconds** Send  email if at elapsed wait time over **microseconds**
 * **--errors count** Send  email if at least **count** recent errors
 * **--files count** Send email if less then **count** files are open
 * **--graph** Enable graphing of stats

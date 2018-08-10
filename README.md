@@ -24,16 +24,11 @@ At this time (Feb 2017) scripts are tested with Facter version 2.4.6
 
 The core Facter components must first be installed separately.
 
-Facter installers can be found at:
-
-* http://downloads.puppetlabs.com/mac/
-* http://downloads.puppetlabs.com/windows/
-
-Facter can often also be installed using the **gem** command:
+Although older Facter installers can be found at http://downloads.puppetlabs.com, Facter is best installed using the **gem** command:
 ```
 sudo gem install facter
 ```
-When the install is complete, copy the _contents_ of the **copy_to_facter** folder into facter's folder. With the installer image, this will be the **/Library/Ruby/Site/facter** folder (Mac OS) or **C:\Program Files\Puppet Labs\Puppet\facter\lib\facter** folder (Windows).
+When the install is complete, copy the _contents_ of the **copy_to_facter** folder into facter's folder. With the gem install on mac OS this will be the **/Library/Ruby/Gems/2.3.0/gems/facter-2.5.1/lib/facter** folder (Mac OS) or **C:\Ruby25-x64\lib\ruby\gems\2.5.0\gems\facter-2.5.1-x64-mingw32\lib\facter** folder (Windows).
 
 Error event settings can be adjusted in the file at **facter/filemaker/filemaker_utils.rb**.
 

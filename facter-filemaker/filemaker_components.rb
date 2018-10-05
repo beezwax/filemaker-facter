@@ -7,19 +7,17 @@
 #   No Windows version at this time.
 #
 #   Testing looks like this:
-#     export FACTERLIB="/Users/simon_b/filemaker-facter/filemaker-facts"; facter -d filemaker_components
+#     FACTERLIB="/Users/simon_b/filemaker-facter/facter-filemaker"; facter -d filemaker_components
 #
 # HISTORY
 #   2015-02-07 simon_b: created file
 #   2015-04-02 simon_b: working Mac OS version
 #   2015-04-05 simon_b: code now wrapped in setcode to avoid error on Windows
 #   2015-04-16 simon_b: minor change to the order components are returned in
+#   2018-10-05 simon_b: made require path relative
 
-## filemaker_components.rb
 
-
-require "facter/filemaker/filemaker_utils"
-
+require_relative "filemaker/filemaker_utils"
 
 Facter.add('filemaker_components') do
 

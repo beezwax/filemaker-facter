@@ -5,16 +5,17 @@
 # NOTES:
 #   Optimal methods require Server Stats logging to be enabled in FMS Admin Console.
 #   Testing:
-#     export FACTERLIB="/Users/simon_b/filemaker-facter/filemaker-facts"; facter -d filemaker_file_count
+#     FACTERLIB="/Users/simon_b/filemaker-facter/facter-filemaker"; facter -d filemaker_file_count
 #
 # HISTORY
 #   2015-02-05 simon_b: created file
 #   2015-02-07 simon_b: factored out testing of recent log activity
+#   2018-10-05 simon_b: made require path relative
 
 ## filemaker_file_count.rb
 
 require 'etc'
-require "facter/filemaker/filemaker_utils"
+require_relative 'filemaker/filemaker_utils'
 
 #
 #       f i l e m a k e r _ f i l e _ c o u n t

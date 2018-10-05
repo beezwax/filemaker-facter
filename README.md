@@ -1,7 +1,8 @@
 ![Beezwax Logo](https://blog.beezwax.net/wp-content/uploads/2016/01/beezwax-logo-github.png)
 
 # filemaker-facter
-Facter custom facts for reporting FileMaker Server statistics and status
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/beezwax/filemaker-facter/blob/master/LICENSE)
+Facter custom facts for reporting FileMaker Server statistics and status.
 
 The files here implement what are called "custom facts" for Facter based reporting with FileMaker Servers. Additionally, there is a helper script that can email alerts when certain conditions are met.
 
@@ -24,11 +25,12 @@ At this time (Feb 2017) scripts are tested with Facter version 2.4.6
 
 The core Facter components must first be installed separately.
 
-Although older Facter installers can be found at http://downloads.puppetlabs.com, Facter is best installed using the **gem** command:
+Although older Facter installer packages can be found at http://downloads.puppetlabs.com, Facter 2.x is best installed using the **gem** command:
 ```
 sudo gem install facter
 ```
-When the install is complete, copy the _contents_ of the **copy_to_facter** folder into facter's folder. With the gem install on mac OS this will be the **/Library/Ruby/Gems/2.3.0/gems/facter-2.5.1/lib/facter** folder (Mac OS) or **C:\Ruby25-x64\lib\ruby\gems\2.5.0\gems\facter-2.5.1-x64-mingw32\lib\facter** folder (Windows).
+When the install is complete, from the filemaker-facter repo's main GitHub page, choose **Download Zip** from the **Clone or download** button.
+Inside the **filemaker-facter** folder from the zip file, copy the **facter-filemaker** folder to ```/usr/local/lib``` or ```C:\Ruby25-x64\lib\ruby\gems\2.5.0\gems\facter-2.5.1-x64-mingw32\lib\facter``` folder (Windows).
 
 Error event settings can be adjusted in the file at **facter/filemaker/filemaker_utils.rb**.
 
@@ -41,15 +43,19 @@ On OS X systems, a crontab entry is a convenient way to send regular reports.
 Here, we assume email (typically Postfix SMTP) is configured on the local system. Enabling Mail with Server.app will accomplish this, or search online for how to configure a Postfix STMP relay. When enabled, this allows us to use the **mail** command to pipe out the reports. Additionaly, in the crontab entry example, the specific facters we want in the report are listed (if these are omitted all values are included).
 
 ```
+# Location of our custom facts.
+export FACTERLIB=/usr/local/lib/facter-filemaker
+#
 #min    hour    dom    mon    dow    command
 #
-# Send report every day at midnight.
-0       0       *      *      *      /usr/bin/facter macosx_productversion diskfree memoryfree sp_uptime filemaker_errors filemaker_stats_disk filemaker_version | /usr/bin/mail -s "facter report: `/bin/hostname`" simon@beezwax.yourdomain
+# Send report every day at midnight. Note: this is one long line
+0       0       *      *      *      /usr/local/bin/facter macosx_productversion diskfree memoryfree sp_uptime filemaker_errors filemaker_stats_disk filemaker_version | /usr/bin/mail -s "facter report: `/bin/hostname`" simon@beezwax.yourdomain
 ```
 
-##process_and_email.rb
+## process_and_email.rb
 
-For additional functionality, including some basic monitoring functions, there is a helper script you can use inside of **copy_to_facter/filemaker** folder. This script does post-processing of the Facter reports, and provides the following features:
+For additional functionality, including some basic monitoring functions, there is a helper script you can use inside of **facter-filemaker/filemaker** folder. This script does post-processing of the Facter reports, and provides the following features:
+
 * send via SMTP client (no need to configure Postfix)
 * convert disk & network stats into graph
 * send email when more than x errors are found

@@ -6,18 +6,19 @@
 #   Assumes logging interval is set to the default 30 second interval, Statistics logging is enabled, and Stats.log has not been rolled recently.
 #
 #   Testing looks like this:
-#     export FACTERLIB="/Users/simon_b/filemaker-facter/filemaker-facts"; facter -d filemaker_recent_elapsed
+#     FACTERLIB="/Users/simon_b/filemaker-facter/facter-filemaker"; facter -d filemaker_recent_elapsed
 #
 # HISTORY
 #   2017-02-19 simon_b: Created filed
 #   2017-03-09 simon_b: now return time in seconds instead of milliseconds
+#   2018-10-05 simon_b: made require path relative
 
 # For testing:
 #    cp filemaker/filemaker_utils.rb /Library/Ruby/Site/facter/filemaker/; cp filemaker_stats_elapsed.rb /Library/Ruby/Site/facter/ 
 
 require 'etc'
 require "facter"
-require "facter/filemaker/filemaker_utils"
+require_relative "filemaker/filemaker_utils"
 
 
 Facter.add('filemaker_stats_elapsed') do

@@ -6,7 +6,7 @@
 #   Assumes logging interval is set to the default 30 second interval and the Event.log has not been rolled recently.
 #
 #   Testing looks like this:
-#     export FACTERLIB="/Users/simon_b/filemaker-facter/filemaker-facts"; facter -d filemaker_errors
+#     FACTERLIB="/Users/simon_b/filemaker-facter/facter-filemaker"; facter -d filemaker_errors
 #
 # HISTORY
 #   2015-02-07 simon_b: created file
@@ -14,11 +14,11 @@
 #   2015-04-02 simon_b: Windows version
 #   2016-01-05 simon_b: now using constants from filemaker_util file
 #   2016-01-05 simon_b: now constrain results by time range
-
+#   2018-10-05 simon_b: made require path relative
 
 require 'etc'
 require 'time'
-require "facter/filemaker/filemaker_utils"
+require_relative 'filemaker/filemaker_utils'
 
 
 Facter.add('filemaker_errors') do

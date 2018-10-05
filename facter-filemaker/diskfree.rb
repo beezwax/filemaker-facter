@@ -7,13 +7,13 @@
 #   No Windows version at this time.
 #
 #   Testing looks like this:
-#     export FACTERLIB="/Users/simon_b/filemaker-facter/filemaker-facts"; facter -d filemaker_components
+#     FACTERLIB="/Users/simon_b/filemaker-facter/facter-filemaker"; facter -d diskfree
 #
 # HISTORY
 #   2017-02-08 simon_b: created file
+#   2018-10-05 simon_b: made require path relative
 
-
-require "facter/filemaker/filemaker_utils"
+require_relative 'filemaker/filemaker_utils'
 
 
 Facter.add('diskfree') do

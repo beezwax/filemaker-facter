@@ -1,23 +1,23 @@
-# FACT: FileMaker Server Network Stats
+# FACT: FileMaker Server Disk Stats
 #
-# PURPOSE: summary of recent network activity
+# PURPOSE: summary of recent disk activity
 #
 # NOTES:
 #   Assumes logging interval is set to the default 30 second interval, Statistics logging is enabled, and Stats.log has not been rolled recently.
+#
 #   Testing looks like this:
-#     export FACTERLIB="/Users/simon_b/filemaker-facter/filemaker-facts"; facter -d filemaker_stats_network
+#      FACTERLIB="/Users/simon_b/filemaker-facter/facter-filemaker"; facter -d filemaker_stats_disk
 #
 # HISTORY
-#   2015-04-02 simon_b: Created filed
-#   2015-04-04 simon_b: first working version
+#   2015-04-04 simon_b: Created filed
 #   2015-04-13 simon_b: fix to avoid first line if header
 
 require 'etc'
 require "facter"
-require "facter/filemaker/filemaker_utils"
+require_relative 'filemaker/filemaker_utils'
 
 
-Facter.add('filemaker_stats_network') do
+Facter.add('filemaker_stats_disk') do
 
   setcode do
      # Change this to adjust the period reported.
@@ -33,33 +33,33 @@ Facter.add('filemaker_stats_network') do
      break_index = 1
 
      sum_timestamp = ""
-     sum_in = 0.0
-     sum_out = 0.0
+     sum_read = 0.0
+     sum_write = 0.0
 
      raw.each_line do |line|
         columns = line.split("\t")
 
         if break_index == 1
            sum_timestamp = columns [STATS_TIMESTAMP]
-           sum_in = 0.0
-           sum_out = 0.0
+           sum_read = 0.0
+           sum_write = 0.0
 
-           # Skip if this is the header. 
+           # Skip if this is the header.
            if !columns [STATS_DISKREAD].is_num?
               break_index += 1
               next
            end
         end
 
-        sum_in += Float(columns [STATS_NETIN])
-        sum_out += Float(columns [STATS_NETOUT])
+        sum_read += Float(columns [STATS_DISKREAD])
+        sum_write += Float(columns [STATS_DISKWRITE])
 
         # End of an interval we are summing up?
         if break_index >= break_interval
-           # print columns [STATS_TIMESTAMP], " ", columns [STATS_NETIN], " ", columns [STATS_NETOUT], " ", sum_in, " ", sum_out, "\n"
+           # print columns [STATS_TIMESTAMP], " ", columns [STATS_DISKREAD], " ", columns [STATS_DISKWRITE], " ", sum_read, " ", sum_write, "\n"
 
            # Add in the sums for this breakout point.
-           intervals.push([sum_timestamp, sum_in, sum_out])
+           intervals.push([sum_timestamp, sum_read, sum_write])
            break_index = 1
         else
            break_index += 1

@@ -8,11 +8,12 @@
 #
 # HISTORY
 #   2015-02-07 simon_b: created file
+#   2018-10-05 simon_b: made require path relative
 
 ## filemaker_version.rb
 
 require 'facter'
-require "facter/filemaker/filemaker_utils"
+require_relative 'filemaker/filemaker_utils'
 
 # Mac Version
 

@@ -14,7 +14,7 @@
 
 require 'etc'
 require 'facter'
-require_relative 'facter/filemaker/filemaker_utils'
+require_relative 'filemaker/filemaker_utils'
 
 
 Facter.add('filemaker_stats_network') do

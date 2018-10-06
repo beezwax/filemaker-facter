@@ -29,7 +29,7 @@
 # 2017-02-24 simon_b: empty file count no longer causes exception
 # 2017-02-24 simon_b: uptime check added
 # 2017-02-24 simon_b: factored check for error messages
-
+# 2018-10-05 simon_b: fix for error when running_components is nil
 # 
 # TODO
 #
@@ -54,7 +54,7 @@ require 'yaml'
 #   MOST OF THESE WILL NEED TO BE EDITED
 
 E_DOMAIN = "some.domain"
-E_TOS = ["first@somedomain.com","second@somedomain.com"]
+E_TOS = ["first@somedomain.com","optional@somedomain.com"]
 E_SMTP = "localhost"
 E_PORT = 25
 
@@ -238,13 +238,13 @@ def process_components(facts, comp_list)
 
    running_components = facts[F_COMPONENTS]
 
+   if $debug
+      p "running_components: %s" % running_components.to_s
+   end
+
    # Need to sort list as intersection function is picky about the order values are specified in.
    if running_components != nil
       running_components.sort!
-   end
-
-   if $debug
-      p "running_components: %s" % running_components.to_s
    end
 
    # Send email b/c component(s)s are not online?
@@ -252,7 +252,7 @@ def process_components(facts, comp_list)
    # Are the required components running?
    if comp_list != nil
       comp_list.sort!
-      if (running_components & comp_list) != comp_list
+      if running_components == nil || (running_components & comp_list) != comp_list
          $alert_codes += C_COMPONENT
          # Embolden b/c we found an issue.
          facts[F_COMPONENTS] = '<b>' + running_components.join(",") + '</b>'

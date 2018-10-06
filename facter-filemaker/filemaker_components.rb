@@ -17,7 +17,7 @@
 #   2018-10-05 simon_b: made require path relative
 
 
-require_relative "filemaker/filemaker_utils"
+require_relative 'filemaker/filemaker_utils'
 
 Facter.add('filemaker_components') do
 

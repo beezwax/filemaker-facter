@@ -12,6 +12,7 @@
 # HISTORY
 #   2017-02-08 simon_b: created file
 #   2018-10-05 simon_b: made require path relative
+#   2018-10-05 simon_b: added APFS formatted volumes
 
 require_relative 'filemaker/filemaker_utils'
 
@@ -26,7 +27,7 @@ Facter.add('diskfree') do
   setcode do
 
      # What if APFS, NFS, or SMB?
-     raw = `df -g -T hfs`
+     raw = `df -g -T hfs,apfs`
      dataRows = raw.lines.to_a[1..-1].join
      dataRows.each_line do |line|
 	# df columns are space padded at variable column widths, so we entab the space runs

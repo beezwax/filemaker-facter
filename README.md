@@ -40,7 +40,9 @@ For some functions to work, **Usage Statistics** logging must be enabled in the 
 
 On OS X systems, a crontab entry is a convenient way to send regular reports.
 
-Here, we assume email (typically Postfix SMTP) is configured on the local system. Enabling Mail with Server.app will accomplish this, or search online for how to configure a Postfix STMP relay. When enabled, this allows us to use the **mail** command to pipe out the reports. Additionaly, in the crontab entry example, the specific facters we want in the report are listed (if these are omitted all values are included).
+Here, we assume email (typically Postfix SMTP) is configured on the local system. Enabling Mail with Server.app will accomplish this, or search online for how to configure a Postfix STMP relay. When enabled, this allows us to use the **mail** command to pipe out the reports.
+
+As part of the crontab entry example, the specific facters we want in the report are listed (if none are specified after the ```facter``` command all facts are included).
 
 ```
 # Location of our custom facts.
@@ -48,13 +50,13 @@ FACTERLIB=/usr/local/lib/facter-filemaker
 #
 #min    hour    dom    mon    dow    command
 #
-# Send report every day at midnight. Note: this is one long line
-0       0       *      *      *      /usr/local/bin/facter macosx_productversion diskfree memoryfree sp_uptime filemaker_errors filemaker_stats_disk filemaker_version | /usr/bin/mail -s "facter report: `/bin/hostname`" simon@beezwax.yourdomain
+# Send report on Sunday at one minute past midnight.
+0       0       *      *      0      /usr/local/bin/facter macosx_productversion diskfree memoryfree sp_uptime filemaker_errors filemaker_stats_disk filemaker_version | /usr/bin/mail -s "facter report: `/bin/hostname`" simon@beezwax.yourdomain
 ```
 
 ## process_and_email.rb
 
-For additional functionality, including some basic monitoring functions, there is a helper script you can use inside of **facter-filemaker/filemaker** folder. This script does post-processing of the Facter reports, and provides the following features:
+For additional functionality, including some basic monitoring functions, there is a helper script written in Ruby you can use inside of **facter-filemaker/filemaker** folder. This script does post-processing of the Facter reports, and provides the following features:
 
 * send via SMTP client (no need to configure Postfix)
 * convert disk & network stats into graph
@@ -67,7 +69,7 @@ For additional functionality, including some basic monitoring functions, there i
 In order for the email feature to work, you must edit the script to set various email related variables.
 
 * E_DOMAIN: domain name for server's email
-* E_TOS: email addresses to send email to
+* E_TOS: email addresses to send reports and alerts to
 * E_SMTP: host name of SMTP server to use
 * E_PORT: port number to use for SMTP connection (if you need to use encryption or authentication you will have to modify the send_email function)
 
@@ -96,7 +98,23 @@ Email if the specified components are not running, fewer then 20 files are onlin
 /usr/bin/facter -y | /Library/Ruby/Site/facter/filemaker/process_and_email.rb --graph --components ADMINSERVER,FMSE,SERVER,WPE,httpd --files 20 --errors 5
 ```
 
-This script is still a work in progress, so See the script for current information on usage & abilities.
+Below shows a crontab example to always email a report on first day of month with a brief selection of facts, and check every month if:
+
+* ADMINSERVER, FMSE, SERVER, WPE, and httpd processes are running
+* at least two database files are open
+* elapsed wait time has not exceeded 2000 ms
+* uptime is less than 60 minutes (the default)
+
+```
+# Location of our custom facts. These are added in to the standard ones.
+FACTERLIB=/usr/local/lib/facter-filemaker
+#
+#min    hour    dom    mon    dow    command
+0       0       1      *      *      /usr/bin/facter -y | /usr/local/facter-filemaker/filemaker/process_and_email.rb -a --graph
+1       *       *      *      *      /usr/bin/facter -y diskfree memoryfree sp_uptime filemaker_version filemaker_components filemaker_errors filemaker_file_count filemaker_stats_disk filemaker_stats_network | /Library/Ruby/Site/facter/filemaker/process_and_email.rb --graph --components ADMINSERVER,FMSE,SERVER,WPE,httpd --files 2 --errors 2 --elapsed 2000 --uptime
+```
+
+This script is still a work in progress, so check the script source for current information on usage & abilities.
 
 ###TO-DO'S
 * process_and_email

@@ -44,7 +44,7 @@ Here, we assume email (typically Postfix SMTP) is configured on the local system
 
 ```
 # Location of our custom facts.
-export FACTERLIB=/usr/local/lib/facter-filemaker
+FACTERLIB=/usr/local/lib/facter-filemaker
 #
 #min    hour    dom    mon    dow    command
 #
@@ -75,6 +75,7 @@ In order for the email feature to work, you must edit the script to set various 
 
 The process_and_email command accepts four parameters used to set how results are returned and values to check for.
 
+* **--always-email** Always send message, useful for status emails
 * **--components name[,...]** If the named components are not running email is sent
   - component names are: ADMINSERVER, FMSIB, SERVER, WPE, XDBC, fmserver_helperd, httpd, fmslogtrimmer
 * **--elapsed seconds** Send  email if at elapsed wait time over **microseconds**

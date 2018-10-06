@@ -98,7 +98,7 @@ Email if the specified components are not running, fewer then 20 files are onlin
 /usr/bin/facter -y | /Library/Ruby/Site/facter/filemaker/process_and_email.rb --graph --components ADMINSERVER,FMSE,SERVER,WPE,httpd --files 20 --errors 5
 ```
 
-Below shows a crontab example to always email a report on first day of month with a brief selection of facts, and check every month if:
+Below shows a crontab example to perform two tasks. First, on first day of month always email a report a brief selection of facts. Second, check every hour if:
 
 * ADMINSERVER, FMSE, SERVER, WPE, and httpd processes are running
 * at least two database files are open

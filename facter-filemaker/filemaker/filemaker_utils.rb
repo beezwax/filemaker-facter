@@ -1,5 +1,9 @@
-# PURPOSE: Utility functions for facts.
+#!/usr/bin/ruby
+
+# PURPOSE
 #
+# Constants and utility functions used by the fact scripts.
+
 # HISTORY
 #   2015-02-06 simon_b: created file
 #   2015-02-08 simon_b: added constants
@@ -14,6 +18,9 @@
 #
 # CONFIGURATION CONSTANTS
 #
+# =================================================
+#
+#  EDIT THESE TO ADJUST ERROR SEARCHES & REPORTING
 
 # Change these if too few/too many errors getting reported.
 # However, changing MAX_SECONDS may be the better choice.
@@ -22,8 +29,11 @@ EVENTS_TO_CHECK = 120
 # How far to go back in logs (time based). 
 MAX_SECONDS = 2*60*60  # 720 seconds, or 2 hours
 
-# Maximum number of errors to return for result.
+# Maximum number of error lines to return for result.
 MAX_ERRORS = 5
+
+#
+# =================================================
 
 #
 # is_mac
@@ -97,6 +107,9 @@ end
 #   l o g _ i s _ c u r r e n t
 #
 
+# Is the log reasonably current? We don't want to be reading from a stale log file.
+# This is quicker than trying to read the last time stamp in log entry.
+
 def log_is_current(path)
   stats_updated_at = File.ctime(path)
   return (Time.new() - stats_updated_at) < (5*60)
@@ -148,6 +161,9 @@ end
 #
 #	c o l u m n _ n a m e s _ f o r _ l o g
 #
+
+# Depending on which FMS functions are enabled, the columns in the Stats.log may shift,
+# so we need to check which columns are in use.
 
 def column_names_for_log (path)
 

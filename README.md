@@ -15,8 +15,10 @@ Currently working facts are:
 | filemaker_components    | FileMaker server components currently running |
 | filemaker_errors        | recent errors in the Events.log (if any) |
 | filemaker_file_count    | number of open database files on server |
+| filemaker_open_files    | paths of currently open database files |
 | filemaker_stats_disk    | disk usage for week, broken down by 24-hour period |
 | filemaker_stats_elapsed    | sum of elapsed time (seconds) for week, broken down by 24-hour period |
+| filemaker_stats_io_time    | sum of I/O times (seconds) for week, broken down by 24-hour period |
 | filemaker_stats_network | network bytes for week, broken out by 24-hour period |
 | filemaker_version       | version of FileMaker Server |
 
@@ -31,7 +33,7 @@ Although older Facter installer packages can be found at http://downloads.puppet
 sudo gem install facter
 ```
 When the install is complete, from the filemaker-facter repo's main GitHub page, choose **Download Zip** from the **Clone or download** button.
-Inside the **filemaker-facter** folder from the zip file, copy the **facter-filemaker** folder to ```/usr/local/lib``` (macOS) or ```C:\Ruby25-x64\lib\ruby\gems\2.5.0\gems\facter-2.5.1-x64-mingw32\lib\facter``` folder (Windows).
+Inside the **filemaker-facter** folder from the zip file, copy the **facter-filemaker** folder to ```/usr/local/lib``` (macOS) or ```C:\Ruby25-x64\lib\ruby\gems\2.5.0\gems\facter-2.5.1-x64-mingw32\lib\facter``` folder (Windows). You may need to create the folder at ```/usr/local/lib```.
 
 Error event settings can be adjusted in the file at **filemaker/filemaker_utils.rb** to control maximum number of errors reported and how far back in logs to search for errors.
 

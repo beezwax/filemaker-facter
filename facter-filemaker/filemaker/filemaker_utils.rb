@@ -13,6 +13,7 @@
 #   2015-11-25 simon_b: modified fmsadmin path after change to FMS 14.0v4
 #   2016-01-05 simon_b: added configuration constants
 #   2017-02-08 simon_b: added entab function
+#   2018-10-07 simon_b: factored out sum_recent_stats from filemaker_stats_elapsed for use with other stats
 #
 
 #
@@ -201,3 +202,72 @@ def last_line_of_log(path)
   return last_line
 end
 
+#
+#   s u m _ r e c e n t _ s t a t s
+#
+
+# Extract all recent values for the given column, then return list with average value for each time interval.
+
+def sum_recent_stats(column_title)
+
+	# Change this to adjust the period reported.
+	break_interval = 2 * 60 * 1  # Get an hours worth of log entries.
+	
+	rows_to_check = break_interval * 7   # One week, minus one b/c index is zero based.
+	
+	# The exact column used varies depending on what's enabled.
+	## head -1 /Library/FileMakerServer/Logs/Stats.log | tr "\t" "\n" | grep column_title
+	stats_columns = column_names_for_log (LOG_STATS)
+	
+	elapsed_col = stats_columns.index (column_title)
+	
+	if elapsed_col == nil
+		intervals = ["NO DATA"]
+		
+		else
+		
+		# Get recent FMS stats data for up to our total number of rows.
+		raw=tail(LOG_STATS,rows_to_check)
+		
+		intervals = []
+		
+		# Index into lines, relative to start of interval
+		break_index = 1
+		
+		sum_timestamp = ""
+		sum_elapsed = 0.0
+		
+		raw.each_line do |line|
+			columns = line.split("\t")
+			
+			if break_index == 1
+				sum_timestamp = columns [STATS_TIMESTAMP]
+				sum_elapsed = 0.0
+				
+				# Skip if this is the header.
+				if !columns [elapsed_col].is_num?
+					break_index += 1
+					next
+				end
+			end
+			
+			# Extract milliseconds elapsed and convert to seconds.
+			sum_elapsed += Float(columns [elapsed_col]) / 1000
+			
+			# End of an interval we are summing up?
+			if break_index >= break_interval
+				# print columns [STATS_TIMESTAMP], " ", columns [elapsed_col], " ", sum_elapsed, "\n"
+				
+				# Add in the sums for this breakout point.
+				intervals.push([sum_timestamp, sum_elapsed])
+				break_index = 1
+				else
+				break_index += 1
+			end
+			
+		end #do
+		
+	end #if
+	
+	return intervals
+end

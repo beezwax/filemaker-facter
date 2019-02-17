@@ -34,7 +34,7 @@ sudo gem install facter
 ```
 You may want to first do a ```sudo gem update```. For macOS this will require the XCode Command Line Tools. You may be able to install this using the command ```xcode-select --install```, or download installer from Apple's Developer site.
 
-With the core facter install is complete, download the FileMaker custom facts from the filemaker-facter's main GitHub page by choosing **Download Zip** under the **Clone or download** button.
+With the core facter install complete, download the FileMaker custom facts from the filemaker-facter's main GitHub page by choosing **Download Zip** under the **Clone or download** button.
 Inside the **filemaker-facter** folder from the zip file, copy the **facter-filemaker** folder to ```/usr/local/lib``` (macOS) or ```C:\Ruby25-x64\lib\ruby\gems\2.5.0\gems\facter-2.5.1-x64-mingw32\lib\facter``` folder (Windows). You may need to create the folder at ```/usr/local/lib``` first.
 
 Error event settings can be adjusted in the file at **filemaker/filemaker_utils.rb** to control maximum number of errors reported and how far back in logs to search for errors.
@@ -120,13 +120,6 @@ FACTERLIB=/usr/local/lib/facter-filemaker
 ```
 
 This script is still a work in progress, so check the script source for current information on usage & abilities.
-
-###TO-DO'S
-* process_and_email
-  - handle incorrectly formatted or missing data better
-  - specify email related parameters from command line or file
-* return count of recent WebDirect clients
-* return count of recent FMP clients
 
 - - -
 <h6>Built by <a href="http://beezwax.net">Beezwax</a</h6>

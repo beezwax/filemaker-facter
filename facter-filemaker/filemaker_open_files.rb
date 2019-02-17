@@ -28,6 +28,7 @@ Facter.add('filemaker_open_files') do
      # grep: only list FileMaker files
      # sort: sort path lines
 
+     # Must run as either root or fmserver user.
      raw = `/usr/sbin/lsof -Fn -p \`/usr/bin/pgrep fmserverd\` | /usr/bin/cut -c2-| /usr/bin/grep ".fmp12$" | /usr/bin/sort`
      dataRows = raw.lines.to_a[1..-1].join
 

@@ -87,6 +87,7 @@ F_ERRORS = 'filemaker_errors'
 F_FILE_COUNT = 'filemaker_file_count'
 F_STATS_DISK = 'filemaker_stats_disk'
 F_STATS_ELAPSED = 'filemaker_stats_elapsed'
+F_STATS_IO_TIME = 'filemaker_stats_io_time'
 F_STATS_NETWORK = 'filemaker_stats_network'
 F_UPTIME = 'sp_uptime'
 
@@ -507,12 +508,14 @@ if true
       # Have switch to use ASCII graphs instead?
       facts[F_STATS_DISK] = graph_array_pair_div(facts [F_STATS_DISK], $graph_increment)
       facts[F_STATS_ELAPSED] = graph_array_div(facts [F_STATS_ELAPSED], $graph_increment)
-      facts[F_STATS_NETWORK] = graph_array_pair_div(facts [F_STATS_NETWORK], $graph_increment)
+	  facts[F_STATS_IO_TIME] = graph_array_div(facts [F_STATS_IO_TIME], $graph_increment)
+	  facts[F_STATS_NETWORK] = graph_array_pair_div(facts [F_STATS_NETWORK], $graph_increment)
    end
 
    if $debug
       p "F_STATS_DISK: %s" % facts[F_STATS_DISK]
       p "F_STATS_ELAPSED: %s" % facts[F_STATS_ELAPSED]
+      p "F_STATS_IO_TIME: %s" % facts[F_STATS_IO_TIME]
       p "F_STATS_NETWORK: %s" % facts[F_STATS_NETWORK]
    end
 

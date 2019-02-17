@@ -28,16 +28,18 @@ At this time (Oct 2018) scripts are tested with Facter version 2.5.1
 
 The core Facter components must first be installed separately.
 
-Although older Facter installer packages can be found at http://downloads.puppetlabs.com, Facter 2.x is best installed using the **gem** command:
+Although older Facter installer packages can be found at http://downloads.puppetlabs.com, Facter 2.x is best installed using the **gem** command, which on macOS looks like:
 ```
 sudo gem install facter
 ```
-When the install is complete, from the filemaker-facter repo's main GitHub page, choose **Download Zip** from the **Clone or download** button.
-Inside the **filemaker-facter** folder from the zip file, copy the **facter-filemaker** folder to ```/usr/local/lib``` (macOS) or ```C:\Ruby25-x64\lib\ruby\gems\2.5.0\gems\facter-2.5.1-x64-mingw32\lib\facter``` folder (Windows). You may need to create the folder at ```/usr/local/lib```.
+You may want to first do a ```sudo gem update```. For macOS this will require the XCode Command Line Tools. You may be able to install this using the command ```xcode-select --install```, or download installer from Apple's Developer site.
+
+With the core facter install is complete, download the FileMaker custom facts from the filemaker-facter's main GitHub page by choosing **Download Zip** under the **Clone or download** button.
+Inside the **filemaker-facter** folder from the zip file, copy the **facter-filemaker** folder to ```/usr/local/lib``` (macOS) or ```C:\Ruby25-x64\lib\ruby\gems\2.5.0\gems\facter-2.5.1-x64-mingw32\lib\facter``` folder (Windows). You may need to create the folder at ```/usr/local/lib``` first.
 
 Error event settings can be adjusted in the file at **filemaker/filemaker_utils.rb** to control maximum number of errors reported and how far back in logs to search for errors.
 
-For some functions to work, **Usage Statistics** logging must be enabled in the FileMaker Server Admin Console. You can find this in the Logging panel in the Database Server section, then checking the **Usage statistics** option.
+For some functions to work, **Usage Statistics** logging must be enabled in the FileMaker Server Admin Console. For FileMaker 16, you can find this in the Logging panel in the Database Server section, then checking the **Usage statistics** option. For FileMaker 17, you must use the fmsadmin command: ```fmsadmin enable serverstats```
 
 ## Crontab Example
 
@@ -93,12 +95,12 @@ The process_and_email command accepts four parameters used to set how results ar
 
 Email selected facts, graphing the stats:
 ```
-/usr/bin/facter -y macosx_productversion diskfree memoryfree sp_uptime filemaker_version filemaker_components filemaker_errors filemaker_file_count filemaker_stats_disk filemaker_stats_network | /Library/Ruby/Site/facter/filemaker/process_and_email.rb -a --graph
+/usr/local/bin/facter -y macosx_productversion diskfree memoryfree sp_uptime filemaker_version filemaker_components filemaker_errors filemaker_file_count filemaker_stats_disk filemaker_stats_network | /Library/Ruby/Site/facter/filemaker/process_and_email.rb -a --graph
 ```
 
 Email if the specified components are not running, fewer then 20 files are online, or more then 5 errors in log:
 ```
-/usr/bin/facter -y | /Library/Ruby/Site/facter/filemaker/process_and_email.rb --graph --components ADMINSERVER,FMSE,SERVER,WPE,httpd --files 20 --errors 5
+/usr/local/bin/facter -y | /usr/local/lib/facter-filemaker/filemaker/process_and_email.rb --graph --components ADMINSERVER,FMSE,SERVER,WPE,httpd --files 20 --errors 5
 ```
 
 Below shows a crontab example to perform two tasks. First, on first day of month always email a report a brief selection of facts. Second, check every hour if:
@@ -113,8 +115,8 @@ Below shows a crontab example to perform two tasks. First, on first day of month
 FACTERLIB=/usr/local/lib/facter-filemaker
 #
 #min    hour    dom    mon    dow    command
-0       0       1      *      *      /usr/bin/facter -y | /usr/local/facter-filemaker/filemaker/process_and_email.rb -a --graph
-1       *       *      *      *      /usr/bin/facter -y diskfree memoryfree sp_uptime filemaker_version filemaker_components filemaker_errors filemaker_file_count filemaker_stats_disk filemaker_stats_network | /Library/Ruby/Site/facter/filemaker/process_and_email.rb --graph --components ADMINSERVER,FMSE,SERVER,WPE,httpd --files 2 --errors 2 --elapsed 2000 --uptime
+0       0       1      *      *      /usr/local/bin/facter -y | /usr/local/facter-filemaker/filemaker/process_and_email.rb -a --graph
+1       *       *      *      *      /usr/local/bin/facter -y diskfree memoryfree sp_uptime filemaker_version filemaker_components filemaker_errors filemaker_file_count filemaker_stats_disk filemaker_stats_network | /usr/local/lib/facter-filemaker/filemaker/process_and_email.rb --graph --components ADMINSERVER,FMSE,SERVER,WPE,httpd --files 2 --errors 2 --elapsed 2000 --uptime
 ```
 
 This script is still a work in progress, so check the script source for current information on usage & abilities.

@@ -459,10 +459,11 @@ if true
    # ELAPSED TIME
 
    elapsed_recent = facts[F_STATS_ELAPSED]
-   if elapsed_recent != nil
+   begin
       # Get last elapsed row's elapsed seconds column (converted by fact to seconds from ms).
       elapsed_seconds = elapsed_recent.last[1].to_f
-   else
+   rescue
+      # Probably here due to incomplete data in Stats.log, which should resolve as the log grows.
       elapsed_seconds = 0
    end
 

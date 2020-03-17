@@ -30,6 +30,9 @@
 # 2017-02-24 simon_b: uptime check added
 # 2017-02-24 simon_b: factored check for error messages
 # 2018-10-05 simon_b: fix for error when running_components is nil
+# 2018-10-05 simon_b: fix for error when running_components is nil
+# 2020-03-17 simon_b: if debug mode, type error when list is nil
+
 # 
 # TODO
 #
@@ -293,7 +296,7 @@ def process_errors(facts)
    if $debug
       p "error_count: %d" % error_count
       p "errors_maximum: %d" % $errors_maximum
-      if error_list != nil
+      if error_list.class == String && error_list != ""
          p "error_list: %s" % error_list.join(",")
       else
          p "error_list:"

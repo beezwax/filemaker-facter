@@ -32,6 +32,7 @@
 # 2018-10-05 simon_b: fix for error when running_components is nil
 # 2018-10-05 simon_b: fix for error when running_components is nil
 # 2020-03-17 simon_b: if debug mode, type error when list is nil
+# 2020-03-17 simon_b:  factored out elapsed time & file count processing
 
 # 
 # TODO
@@ -266,6 +267,37 @@ def process_components(facts, comp_list)
 end
 
 #
+#  p r o c e s s _ e l a p s e d _ t i m e
+#
+
+def process_elapsed_time(facts)
+
+   @elapsed_recent = facts[F_STATS_ELAPSED]
+   begin
+      # Get last elapsed row's elapsed seconds column (converted by fact from ms to seconds).
+      @elapsed_seconds = @elapsed_recent.last[1].to_f
+   rescue
+      # Probably here due to incomplete data in Stats.log, which should resolve as the log grows.
+      @elapsed_seconds = 0
+   end
+
+   # Trigger reached?
+   if @elapsed_seconds > $elapsed_maximum
+      $alert_codes += C_ELAPSED
+      # Can't use the method below b/c we use graph_array_div to draw the array.
+      # Will need to either highlight the name instead, or modify graph_array_div to accept a embolden flag.
+      #    facts[F_STATS_ELAPSED] = '<b>%d</b>' % elapsed_ms
+   end
+
+   if $debug
+      p "elapsed_seconds: %d" % @elapsed_seconds
+   end
+
+   return @elapsed_seconds
+end
+
+
+#
 #  p r o c e s s _ e r r o r s
 #
 
@@ -304,6 +336,35 @@ def process_errors(facts)
    end
 
    return error_list
+end
+
+
+#
+#  p r o c e s s _ f i l e _ c o u n t
+#
+
+def process_file_count(facts)
+
+   # How many FMS files are currently hosted?
+   @file_count = facts['filemaker_file_count']
+
+   if @file_count != nil
+      @file_count = file_count.to_f
+   else
+      @file_count = 0
+   end
+
+   if $debug
+      p "file_count: %d" % @file_count
+   end
+
+   # Send b/c too few files are online?
+   if ($files_minimum != 0) && (@file_count < $files_minimum)
+      $alert_codes += C_FILE
+      facts[F_FILE_COUNT] = '<b>%d &lt; %d</b>' % [@file_count, $files_minimum]
+   end
+
+   return @file_count
 end
 
 
@@ -449,58 +510,26 @@ if true
 
    # COMPONENTS
 
-   # Check for component issues.
+   # Check for FMS component issues.
    process_components(facts, comp_list)
 
 
    # ERRORS
 
-   # Check for recent error messages.
+   # Check for recent FMS error messages.
    error_list = process_errors(facts)
 
 
    # ELAPSED TIME
 
-   elapsed_recent = facts[F_STATS_ELAPSED]
-   begin
-      # Get last elapsed row's elapsed seconds column (converted by fact to seconds from ms).
-      elapsed_seconds = elapsed_recent.last[1].to_f
-   rescue
-      # Probably here due to incomplete data in Stats.log, which should resolve as the log grows.
-      elapsed_seconds = 0
-   end
-
-   # Send b/c over maximum?
-   if elapsed_seconds > $elapsed_maximum
-      $alert_codes += C_ELAPSED
-      # Can't use the method below b/c we use graph_array_div to draw the array.
-      # Will need to either highlight the name instead, or modify graph_array_div to accept a embolden flag.
-      #    facts[F_STATS_ELAPSED] = '<b>%d</b>' % elapsed_ms
-   end
-
-   if $debug
-      p "elapsed_seconds: %d" % elapsed_seconds
-   end
+   # Gather FMS' elapsed call times.
+   elapsed_seconds = process_elapsed_time(facts)
 
 
    # FILE COUNT
 
-   file_count = facts['filemaker_file_count']
-   if file_count != nil
-      file_count = file_count.to_f
-   else
-      file_count = 0
-   end
-
-   if $debug
-      p "file_count: %d" % file_count
-   end
-
-   # Send b/c too few files are online?
-   if ($files_minimum != 0) && (file_count < $files_minimum)
-      $alert_codes += C_FILE
-      facts[F_FILE_COUNT] = '<b>%d &lt; %d</b>' % [file_count, $files_minimum]
-   end
+   # How many FMS files are currently open?
+   file_count = process_file_count(facts)
 
 
    # DISK, ELAPSED, NETWORK STATS
